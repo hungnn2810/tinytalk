@@ -1,0 +1,10 @@
+{
+  "name": "@tinytalk1/frontend-admin-e2e",
+  "version": "0.0.1",
+  "private": true,
+  "nx": {
+    "implicitDependencies": [
+      "@tinytalk1/frontend-admin"
+    ]
+  }
+}
