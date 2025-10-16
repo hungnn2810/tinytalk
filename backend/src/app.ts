@@ -1,4 +1,5 @@
 import express, { Request, Response } from "express";
+dotenv.Config();
 
 const app = express();
 const port = process.env.PORT || 3000;
