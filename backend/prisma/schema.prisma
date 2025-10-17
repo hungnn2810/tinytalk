@@ -21,3 +21,54 @@ enum Role {
   TEACHER
   STUDENT
 }
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum RelationshipToStudent {
+  FATHER
+  MOTHER
+  SISTER
+  BROTHER
+  GRANDFATHER
+  GRANDMOTHER
+}
+
+model Class {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  code      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+}
+
+model Student {
+  id          String             @id @default(uuid())
+  name        String             @unique
+  gender      Gender
+  dateOfBirth DateTime
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @default(now())
+  parents     StudentParentMap[]
+}
+
+model Parent {
+  id                    String                @id @default(uuid())
+  name                  String
+  phoneNumber           String
+  relationshipToStudent RelationshipToStudent
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @default(now())
+  students              StudentParentMap[]
+}
+
+model StudentParentMap {
+  studentId String
+  parentId  String
+  student   Student @relation(fields: [studentId], references: [id])
+  parent    Parent  @relation(fields: [parentId], references: [id])
+
+  @@id([studentId, parentId])
+}
