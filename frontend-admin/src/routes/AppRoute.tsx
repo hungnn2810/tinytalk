@@ -1,19 +1,19 @@
 import { Route, Routes } from "react-router-dom";
-import { LoginPage } from "../pages/LoginPage";
-import { ProtectedRoute } from "./ProtectedRoute";
 import { MainLayout } from "../layouts/MainLayout";
-import HomePage from "../pages/HomePage";
 import ClassesPage from "../pages/ClassesPage";
+import HomePage from "../pages/HomePage";
 import HomeworksPage from "../pages/HomeworksPage";
+import { LoginPage } from "../pages/LoginPage";
+import { PrivateRoute } from "./PrivateRoute";
 
 export const AppRouter = () => {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
 
-      <Route element={<ProtectedRoute />}>
+      <Route element={<PrivateRoute />}>
         <Route element={<MainLayout />}>
-          <Route index element={<HomePage />} />
+          <Route path="dashboard" index element={<HomePage />} />
           <Route path="classes" element={<ClassesPage />} />
           <Route path="homeworks" element={<HomeworksPage />} />
         </Route>

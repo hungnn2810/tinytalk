@@ -1,14 +1,11 @@
 import { Box, VStack } from "@chakra-ui/react";
-import { ActivitySection } from "../components/Home/ClassSection";
 import { useEffect } from "react";
+import { ActivitySection } from "../components/Home/ClassSection";
 import { useAuth } from "../hooks/useAuth";
 
 export default function HomePage() {
-  const { isAuthenticated, user } = useAuth();
-  useEffect(() => {
-    console.log("Authenticated:", isAuthenticated);
-    console.log("User:", user);
-  }, [isAuthenticated, user]);
+  const { user } = useAuth();
+  useEffect(() => {}, [user]);
   return (
     <Box p={6}>
       {/* Classes */}

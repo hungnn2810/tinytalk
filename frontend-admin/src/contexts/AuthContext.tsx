@@ -1,10 +1,11 @@
 // src/context/AuthContext.ts
 import { createContext } from "react";
+import type { User } from "../models/user";
 
-export interface AuthContextType {
+interface AuthContextType {
   isAuthenticated: boolean;
-  user: { name: string } | null;
-  login: (user: { name: string }) => void;
+  user: User | null;
+  login: (user: User) => void;
   logout: () => void;
 }
 

@@ -1,13 +1,23 @@
-import express, { Request, Response } from "express";
-dotenv.Config();
+import cors from "cors";
+import dotenv from "dotenv";
+import express from "express";
+import authRoutes from "./routes/auth";
+dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3000;
+app.use(express.json());
+app.use(cors());
 
-app.get("/", (req: Request, res: Response) => {
-  res.send("Hello, TypeScript Express!");
+// Auth routes
+app.use("/auth", authRoutes);
+
+app.get("/health-check", (req, res) => {
+  res.send({ message: "Server healthy" });
 });
 
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
+const port = process.env.PORT;
+const server = app.listen(port, () => {
+  console.log(`Listening at http://localhost:${port}`);
 });
+
+server.on("error", console.error);

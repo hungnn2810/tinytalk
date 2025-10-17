@@ -10,10 +10,29 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { Form, Formik } from "formik";
+import { useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 import { InputField } from "../components/InputField";
+import { useAuth } from "../hooks/useAuth";
+import { login } from "../services/auth.service";
 
 export const LoginPage = () => {
+  const auth = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogin = async (values: { email: string; password: string }) => {
+    try {
+      const res = await login(values);
+
+      // 👉 Gọi context login để set user
+      auth.login({ name: res.user.email, email: res.user.email });
+
+      navigate("/dashboard");
+    } catch (err: unknown) {
+      console.error(err);
+    }
+  };
+
   return (
     <Center h="100vh" bg="purple.200">
       <Box
@@ -27,13 +46,11 @@ export const LoginPage = () => {
         <Heading as="h1">Log in.</Heading>
 
         <Formik
-          onSubmit={(values, { setSubmitting }) => {
-            setTimeout(() => {
-              console.log(values);
-              setSubmitting(false);
-            }, 1000);
-          }}
           initialValues={{ email: "", password: "" }}
+          onSubmit={async (values, { setSubmitting }) => {
+            await handleLogin(values);
+            setSubmitting(false);
+          }}
         >
           {({ isSubmitting }) => (
             <Form>
