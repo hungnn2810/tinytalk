@@ -1,7 +1,7 @@
 import { Box, VStack } from "@chakra-ui/react";
 import { useEffect } from "react";
 import { useAuth } from "../../hooks/useAuth";
-import { ClassSection } from "./ClassSection";
+import { OverviewSection } from "./OverviewSection";
 import { WelcomeSection } from "./WelcomeSection";
 
 export default function HomePage() {
@@ -12,7 +12,7 @@ export default function HomePage() {
       {/* Classes */}
       <VStack mt={8} spacing={10}>
         <WelcomeSection />
-        <ClassSection />
+        <OverviewSection />
       </VStack>
     </Box>
   );

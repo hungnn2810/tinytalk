@@ -38,24 +38,50 @@ enum RelationshipToStudent {
   GRANDMOTHER
 }
 
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
 model Class {
   id        String   @id @default(uuid())
   name      String   @unique
   code      String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
+
+  timetables ClassTimetable[]
+  students   Student[]
+}
+
+model ClassTimetable {
+  id        String    @id @default(uuid())
+  classId   String
+  dayOfWeek DayOfWeek
+  startTime DateTime
+  endTime   DateTime
+
+  class Class @relation(fields: [classId], references: [id])
 }
 
 model Student {
-  id          String             @id @default(uuid())
-  user_id     String             @unique
-  name        String             @unique
+  id          String   @id @default(uuid())
+  user_id     String   @unique
+  class_id    String   @unique
+  name        String   @unique
   gender      Gender
   dateOfBirth DateTime
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @default(now())
-  user        User               @relation(fields: [user_id], references: [id])
-  parents     StudentParentMap[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+
+  user    User               @relation(fields: [user_id], references: [id])
+  class   Class              @relation(fields: [class_id], references: [id])
+  parents StudentParentMap[]
 }
 
 model Parent {

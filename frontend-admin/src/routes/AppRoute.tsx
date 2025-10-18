@@ -13,7 +13,7 @@ export const AppRouter = () => {
 
       <Route element={<PrivateRoute />}>
         <Route element={<MainLayout />}>
-          <Route path="dashboard" index element={<HomePage />} />
+          <Route index element={<HomePage />} />
           <Route path="classes" element={<ClassesPage />} />
           <Route path="homeworks" element={<HomeworksPage />} />
         </Route>

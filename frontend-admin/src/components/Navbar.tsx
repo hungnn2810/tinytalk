@@ -1,27 +1,25 @@
+import { AddIcon, HamburgerIcon, SearchIcon } from "@chakra-ui/icons";
 import {
   Box,
+  Button,
   Flex,
   HStack,
+  Icon,
+  IconButton,
+  Image,
   Input,
   InputGroup,
   InputLeftElement,
-  IconButton,
-  Button,
-  Image,
   Text,
-  Icon,
 } from "@chakra-ui/react";
-import { SearchIcon, AddIcon, HamburgerIcon } from "@chakra-ui/icons";
-import { FaHouse } from "react-icons/fa6";
-import logo from "../assets/logo.png";
-import { SiGoogleclassroom } from "react-icons/si";
-import { LiaBookSolid } from "react-icons/lia";
+import { FaBook, FaChalkboardTeacher, FaHome } from "react-icons/fa";
 import { NavLink } from "react-router-dom";
+import logo from "../assets/logo.png";
 
 const navItems = [
-  { label: "Home", path: "/", icon: FaHouse },
-  { label: "Classes", path: "/classes", icon: SiGoogleclassroom },
-  { label: "Homeworks", path: "/homeworks", icon: LiaBookSolid },
+  { label: "Home", path: "/", icon: FaHome },
+  { label: "Classes", path: "/classes", icon: FaChalkboardTeacher },
+  { label: "Homeworks", path: "/homeworks", icon: FaBook },
 ];
 
 export const Navbar = () => {
