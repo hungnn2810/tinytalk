@@ -1,7 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 import { MainLayout } from "../layouts/MainLayout";
 import ClassesPage from "../pages/ClassesPage";
-import HomePage from "../pages/HomePage";
+import HomePage from "../pages/Home/HomePage";
 import HomeworksPage from "../pages/HomeworksPage";
 import { LoginPage } from "../pages/LoginPage";
 import { PrivateRoute } from "./PrivateRoute";

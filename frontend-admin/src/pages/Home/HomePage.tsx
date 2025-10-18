@@ -1,7 +1,8 @@
 import { Box, VStack } from "@chakra-ui/react";
 import { useEffect } from "react";
-import { ActivitySection } from "../components/Home/ClassSection";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../../hooks/useAuth";
+import { ClassSection } from "./ClassSection";
+import { WelcomeSection } from "./WelcomeSection";
 
 export default function HomePage() {
   const { user } = useAuth();
@@ -10,7 +11,8 @@ export default function HomePage() {
     <Box p={6}>
       {/* Classes */}
       <VStack mt={8} spacing={10}>
-        <ActivitySection />
+        <WelcomeSection />
+        <ClassSection />
       </VStack>
     </Box>
   );

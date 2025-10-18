@@ -25,7 +25,7 @@ export const LoginPage = () => {
       const res = await login(values);
 
       // 👉 Gọi context login để set user
-      auth.login({ name: res.user.email, email: res.user.email });
+      auth.login({ name: res.user.name, email: res.user.email });
 
       navigate("/dashboard");
     } catch (err: unknown) {
