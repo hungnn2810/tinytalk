@@ -11,10 +11,20 @@ import {
 } from "@chakra-ui/react";
 import { Form, Formik } from "formik";
 import { useNavigate } from "react-router-dom";
+import * as Yup from "yup";
 import logo from "../assets/logo.png";
 import { InputField } from "../components/InputField";
 import { useAuth } from "../hooks/useAuth";
 import { login } from "../services/auth.service";
+
+const LoginSchema = Yup.object().shape({
+  email: Yup.string()
+    .email("Email is incorrect format")
+    .required("Email is required"),
+  password: Yup.string()
+    .required("Password is required")
+    .min(6, "Password must have at least 6 characters"),
+});
 
 export const LoginPage = () => {
   const auth = useAuth();
@@ -23,10 +33,7 @@ export const LoginPage = () => {
   const handleLogin = async (values: { email: string; password: string }) => {
     try {
       const res = await login(values);
-
-      // 👉 Gọi context login để set user
       auth.login({ name: res.user.name, email: res.user.email });
-
       navigate("/");
     } catch (err: unknown) {
       console.error(err);
@@ -47,6 +54,7 @@ export const LoginPage = () => {
 
         <Formik
           initialValues={{ email: "", password: "" }}
+          validationSchema={LoginSchema}
           onSubmit={async (values, { setSubmitting }) => {
             await handleLogin(values);
             setSubmitting(false);

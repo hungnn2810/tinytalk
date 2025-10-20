@@ -1,6 +1,4 @@
-import { Box, Center, HStack, Text } from "@chakra-ui/react";
-import { FaBolt, FaClock, FaSuitcase, FaUserGraduate } from "react-icons/fa";
-import { StatCard } from "../../components/StatCard";
+import { Box, Center, Text } from "@chakra-ui/react";
 import { useAuth } from "../../hooks/useAuth";
 
 export const WelcomeSection = () => {
@@ -17,33 +15,6 @@ export const WelcomeSection = () => {
           👋
         </Text>
       </Center>
-
-      <HStack spacing={5} align="stretch" flexWrap="wrap" justify="center">
-        <StatCard
-          icon={<FaSuitcase />}
-          label="TOTAL CLASSES"
-          value={62}
-          tooltip="Total registered classes"
-        />
-        <StatCard
-          icon={<FaUserGraduate />}
-          label="TOTAL STUDENTS"
-          value={422}
-          tooltip="Total enrolled students"
-        />
-        <StatCard
-          icon={<FaBolt />}
-          label="COMPLETED TESTS"
-          value="2,333"
-          tooltip="Number of completed tests"
-        />
-        <StatCard
-          icon={<FaClock />}
-          label="STUDY HOURS"
-          value="378.5"
-          tooltip="Total study hours (hours)"
-        />
-      </HStack>
     </Box>
   );
 };

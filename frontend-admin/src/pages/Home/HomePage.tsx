@@ -7,6 +7,7 @@ import { WelcomeSection } from "./WelcomeSection";
 export default function HomePage() {
   const { user } = useAuth();
   useEffect(() => {}, [user]);
+
   return (
     <Box p={6}>
       {/* Classes */}

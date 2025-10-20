@@ -1,131 +1,205 @@
 import {
   Box,
+  Button,
+  Center,
   Flex,
+  HStack,
+  Spinner,
   Tab,
   Table,
   TabList,
   TabPanel,
   TabPanels,
   Tabs,
+  Tbody,
+  Td,
   Text,
   Th,
   Thead,
   Tr,
+  VStack,
 } from "@chakra-ui/react";
+import { useEffect, useState } from "react";
+import { FaBolt, FaClock, FaSuitcase, FaUserGraduate } from "react-icons/fa";
+import { StatCard } from "../../components/StatCard";
+import type { SearchResponse } from "../../models/base/search.model";
+import type { Class } from "../../models/class.model";
+import { searchClass } from "../../services/class.service";
+import { toGmt7 } from "../../utils/datetime.util";
 
-const mockedData = [
-  {
-    name: "FLYER Bắc Ninh",
-    role: "Admin",
-    wallet: 0,
-    admins: 1,
-    classes: 2,
-    teachers: 0,
-    students: 3,
-  },
-  {
-    name: "FLYER An Giang",
-    role: "Admin",
-    wallet: 0,
-    admins: 1,
-    classes: 6,
-    teachers: 0,
-    students: 11,
-  },
-  {
-    name: "FLYER Nghệ An",
-    role: "Admin",
-    wallet: 0,
-    admins: 1,
-    classes: 5,
-    teachers: 0,
-    students: 7,
-  },
-  {
-    name: "FLYER Bình Thuận",
-    role: "Admin",
-    wallet: 0,
-    admins: 2,
-    classes: 3,
-    teachers: 0,
-    students: 7,
-  },
-  {
-    name: "FLYER Bình Dương",
-    role: "Admin",
-    wallet: 0,
-    admins: 2,
-    classes: 9,
-    teachers: 0,
-    students: 8,
-  },
-  {
-    name: "FLYER Đà Nẵng",
-    role: "Admin",
-    wallet: 0,
-    admins: 2,
-    classes: 3,
-    teachers: 0,
-    students: 9,
-  },
-  {
-    name: "Duyên Kỳ's school",
-    role: "Admin",
-    wallet: 0,
-    admins: 2,
-    classes: 8,
-    teachers: 0,
-    students: 90,
-  },
-  {
-    name: "FLYER Hải Phòng",
-    role: "Admin",
-    wallet: 0,
-    admins: 1,
-    classes: 6,
-    teachers: 0,
-    students: 45,
-  },
-  {
-    name: "FLYER Hồ Chí Minh",
-    role: "Admin",
-    wallet: 0,
-    admins: 2,
-    classes: 9,
-    teachers: 1,
-    students: 63,
-  },
-  {
-    name: "Demo FLYER's school",
-    role: "Admin",
-    wallet: 204,
-    admins: 4,
-    classes: 11,
-    teachers: 5,
-    students: 180,
-  },
-];
+export const OverviewSection = () => {
+  const [classes, setClasses] = useState<Class[]>([]);
+  const [total] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [metadata, setMetadata] = useState<SearchResponse<Class>["metadata"]>({
+    total: 0,
+    page: 1,
+    limit: 10,
+    totalPages: 1,
+    hasNextPage: false,
+    hasPrevPage: false,
+  });
 
-export const OverviewSection = () => (
-  <Box bg="white" borderRadius="2xl" p={6} shadow="sm">
-    <Tabs colorScheme="purple" variant="enclosed">
-      <TabList borderBottom="none">
-        <Tab fontWeight="bold">Classes</Tab>
-        <Tab fontWeight="bold">Students</Tab>
-        <Tab fontWeight="bold">Homeworks</Tab>
-      </TabList>
-      <TabPanels>
-        <TabPanel>
-          <Flex justify="space-between" align="center" mb={4}>
-            <Text fontSize="xl" fontWeight="bold">
-              Classes
-            </Text>
-            <Text fontSize="sm" color="gray.500">
-              Total: {mockedData.length}
-            </Text>
-          </Flex>
+  useEffect(() => {
+    setLoading(true);
+    searchClass({ page, limit: 10 }).then((res) => {
+      setClasses(res.data);
+      setMetadata(res.metadata);
+      setLoading(false);
+    });
+  }, [page]);
 
-          <Box overflow="auto">
+  const handlePrev = () => {
+    if (metadata.hasPrevPage) setPage((p) => p - 1);
+  };
+
+  const handleNext = () => {
+    if (metadata.hasNextPage) setPage((p) => p + 1);
+  };
+
+  return (
+    <VStack spacing={6} align="stretch" w="full" px={6}>
+      <HStack spacing={5} align="stretch" flexWrap="wrap" w="full">
+        <StatCard
+          icon={<FaSuitcase />}
+          label="TOTAL CLASSES"
+          value={62}
+          tooltip="Total registered classes"
+        />
+        <StatCard
+          icon={<FaSuitcase />}
+          label="PEDING CLASSES"
+          value={62}
+          tooltip="Total pending classes"
+        />
+        <StatCard
+          icon={<FaUserGraduate />}
+          label="TOTAL STUDENTS"
+          value={422}
+          tooltip="Total enrolled students"
+        />
+        <StatCard
+          icon={<FaBolt />}
+          label="COMPLETED TESTS"
+          value="2,333"
+          tooltip="Number of completed tests"
+        />
+        <StatCard
+          icon={<FaClock />}
+          label="STUDY HOURS"
+          value="378.5"
+          tooltip="Total study hours (hours)"
+        />
+      </HStack>
+
+      <Tabs variant="unstyled" w="full">
+        <TabList
+          borderBottom="1px solid"
+          borderColor="gray.100"
+          display="flex"
+          alignItems="center"
+          gap={6}
+          px={4}
+        >
+          {["Classes", "Students", "Homeworks"].map((label) => (
+            <Tab
+              key={label}
+              flex="none"
+              px={2}
+              py={3}
+              position="relative"
+              fontWeight="semibold"
+              color="gray.500"
+              _selected={{
+                color: "purple.600",
+                fontWeight: "bold",
+                _after: {
+                  opacity: 1,
+                  transform: "translateX(-50%) scaleX(1)",
+                },
+              }}
+              _after={{
+                content: '""',
+                position: "absolute",
+                height: "3px",
+                width: "100%",
+                left: "50%",
+                bottom: "-1px",
+                transform: "translateX(-50%) scaleX(0)",
+                transformOrigin: "center",
+                bg: "purple.500",
+                borderRadius: "full",
+                transition: "transform 180ms ease, opacity 120ms ease",
+                opacity: 0,
+              }}
+            >
+              {label}
+            </Tab>
+          ))}
+        </TabList>
+        <TabPanels>
+          <TabPanel>
+            <Flex justify="space-between" align="center" mb={4}>
+              <Text fontSize="xl" fontWeight="bold">
+                Classes
+              </Text>
+              <Text fontSize="sm" color="gray.500">
+                Total: {total}
+              </Text>
+            </Flex>
+            {loading ? (
+              <Center py={10}>
+                <Spinner size="lg" color="purple.500" />
+              </Center>
+            ) : (
+              <>
+                <Box overflowX="auto" w="full">
+                  <Table variant="simple" minW="1200px">
+                    <Thead bg="gray.50">
+                      <Tr>
+                        <Th>Name</Th>
+                        <Th>Code</Th>
+                        <Th>Start</Th>
+                        <Th>End</Th>
+                      </Tr>
+                    </Thead>
+                    <Tbody>
+                      {classes.map((c) => (
+                        <Tr key={c.id}>
+                          <Td>{c.name}</Td>
+                          <Td>{c.code}</Td>
+                          <Td>{toGmt7(new Date(c.startTime), "dd/MM/yyyy")}</Td>
+                          <Td>
+                            {c.endTime
+                              ? new Date(c.endTime).toLocaleString()
+                              : ""}
+                          </Td>
+                        </Tr>
+                      ))}
+                    </Tbody>
+                  </Table>
+                </Box>
+                <Flex justify="space-between" align="center" mt={4}>
+                  <Button
+                    onClick={handlePrev}
+                    isDisabled={!metadata.hasPrevPage}
+                  >
+                    Previous
+                  </Button>
+                  <Text fontSize="sm" color="gray.500">
+                    Page {metadata.page} of {metadata.totalPages}
+                  </Text>
+                  <Button
+                    onClick={handleNext}
+                    isDisabled={!metadata.hasNextPage}
+                  >
+                    Next
+                  </Button>
+                </Flex>
+              </>
+            )}
+            {/* <Box overflow="auto">
             <Table variant="simple" minW="1200px">
               <Thead bg="gray.50">
                 <Tr>
@@ -134,9 +208,10 @@ export const OverviewSection = () => (
                 </Tr>
               </Thead>
             </Table>
-          </Box>
-        </TabPanel>
-      </TabPanels>
-    </Tabs>
-  </Box>
-);
+          </Box> */}
+          </TabPanel>
+        </TabPanels>
+      </Tabs>
+    </VStack>
+  );
+};

@@ -1,6 +1,7 @@
 import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
+import { errorHandler } from "./middlewares/errorHandler";
 import authRoutes from "./routes/auth.route";
 import classesRoutes from "./routes/classes.route";
 dotenv.config();
@@ -16,6 +17,8 @@ app.use("/classes", classesRoutes);
 app.get("/health-check", (req, res) => {
   res.send({ message: "Server healthy" });
 });
+
+app.use(errorHandler);
 
 const port = process.env.PORT;
 const server = app.listen(port, () => {

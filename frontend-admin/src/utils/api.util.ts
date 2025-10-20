@@ -1,5 +1,5 @@
 import type { AxiosError, AxiosRequestConfig } from "axios";
-import api from "./index";
+import api from "../api/index";
 
 export async function apiRequest<TResponse, TBody = unknown>(
   method: "get" | "post" | "put" | "patch" | "delete",

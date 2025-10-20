@@ -1,6 +1,6 @@
 import {
   FormControl,
-  FormHelperText,
+  FormErrorMessage,
   FormLabel,
   Input,
   InputGroup,
@@ -19,7 +19,7 @@ interface IInputFieldProps {
 }
 
 export const InputField = (props: IInputFieldProps): JSX.Element => {
-  const { label, leftAddon, ...restofProps } = props;
+  const { label, leftAddon, ...restOfProps } = props;
   const [field, meta] = useField(props);
   return (
     <FormControl id={props.name} isInvalid={!!meta.error && !!meta.touched}>
@@ -33,13 +33,10 @@ export const InputField = (props: IInputFieldProps): JSX.Element => {
       {/* Input */}
       <InputGroup>
         {leftAddon && <InputLeftAddon bg="purple.50" children={leftAddon} />}
-        <Input focusBorderColor="purple.500" {...field} {...restofProps} />
+        <Input focusBorderColor="purple.500" {...field} {...restOfProps} />
       </InputGroup>
 
-      {/* Error message */}
-      {meta.error && meta.touched && (
-        <FormHelperText>{meta.error}</FormHelperText>
-      )}
+      <FormErrorMessage>{meta.touched ? meta.error : ""}</FormErrorMessage>
     </FormControl>
   );
 };

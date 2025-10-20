@@ -1,35 +1,46 @@
 import { Role } from "@prisma/client";
-import express from "express";
+import express, { NextFunction, Request, Response } from "express";
 import { prisma } from "../../prisma/prisma";
 import { authenticate, authorize } from "../middlewares/auth";
+import { validateRequest } from "../middlewares/validateRequest";
 import {
   createSearchResponseMetadata,
   SearchResponse,
 } from "../models/pagination";
 import { parseQuery } from "../utils/parseQuery";
+import { loginValidator } from "../validators/auth.validator";
 
 const router = express.Router();
 
 // Create
-router.post("/", async (req, res) => {
-  const { name, code } = req.body;
+router.post(
+  "/",
+  loginValidator,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      validateRequest(req);
+      const { name, code, colorCode, startTime, endTime } = req.body;
 
-  if (!name || !code) {
-    return res.status(400).json({ message: "Name and code are required" });
+      if (!name || !code) {
+        return res.status(400).json({ message: "Name and code are required" });
+      }
+
+      const existing = await prisma.class.findFirst({
+        where: { OR: [{ code }, { name }] },
+      });
+
+      if (existing) return res.status(400).json({ message: "Class exists" });
+
+      const newEntity = await prisma.class.create({
+        data: { name, code, colorCode, startTime, endTime },
+      });
+
+      return res.status(201).json(newEntity);
+    } catch (err) {
+      next(err);
+    }
   }
-
-  const existing = await prisma.class.findFirst({
-    where: { OR: [{ code }, { name }] },
-  });
-
-  if (existing) return res.status(400).json({ message: "Class exists" });
-
-  const newEntity = await prisma.class.create({
-    data: { name, code },
-  });
-
-  return res.status(201).json(newEntity);
-});
+);
 
 interface ClassQuery {
   page: number;
