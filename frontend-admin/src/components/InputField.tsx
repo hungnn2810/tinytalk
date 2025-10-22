@@ -1,4 +1,5 @@
 import {
+  Box,
   FormControl,
   FormErrorMessage,
   FormLabel,
@@ -36,7 +37,11 @@ export const InputField = (props: IInputFieldProps): JSX.Element => {
         <Input focusBorderColor="purple.500" {...field} {...restOfProps} />
       </InputGroup>
 
-      <FormErrorMessage>{meta.touched ? meta.error : ""}</FormErrorMessage>
+      <Box minH="20px" mt="1">
+        <FormErrorMessage m="0" fontSize="sm">
+          {meta.touched ? meta.error : ""}
+        </FormErrorMessage>
+      </Box>
     </FormControl>
   );
 };

@@ -2,22 +2,38 @@ import { ChevronDownIcon } from "@chakra-ui/icons";
 import {
   Box,
   Button,
+  FormControl,
+  FormLabel,
   Grid,
   GridItem,
   Menu,
   MenuButton,
   MenuList,
 } from "@chakra-ui/react";
+import type { JSX } from "@emotion/react/jsx-runtime";
 import { useField } from "formik";
-import { CLASS_COLORS } from "../constants/classColor";
+import { COLOR_CODE } from "../constants/colorCode";
 
-export const ColorPicker = ({ name }: { name: string }) => {
-  const [field, , helpers] = useField(name);
+interface IInputFieldProps {
+  name: string;
+  label?: string;
+}
+
+export const ColorPicker = (props: IInputFieldProps): JSX.Element => {
+  const { label } = props;
+  const [field, , helpers] = useField(props.name);
   const selected = field.value;
 
   return (
-    <Box>
-      <Menu placement="bottom-start">
+    <FormControl>
+      {/* Label */}
+      {label && (
+        <FormLabel mb="1" htmlFor={props.name}>
+          {label}
+        </FormLabel>
+      )}
+      {/* <InputGroup> */}
+      <Menu>
         <MenuButton
           as={Button}
           rightIcon={<ChevronDownIcon />}
@@ -48,7 +64,7 @@ export const ColorPicker = ({ name }: { name: string }) => {
             justifyItems="center"
             alignItems="center"
           >
-            {CLASS_COLORS.map((color) => (
+            {COLOR_CODE.map((color) => (
               <GridItem key={color}>
                 <Box
                   w="8"
@@ -70,6 +86,7 @@ export const ColorPicker = ({ name }: { name: string }) => {
           </Grid>
         </MenuList>
       </Menu>
-    </Box>
+      {/* </InputGroup> */}
+    </FormControl>
   );
 };

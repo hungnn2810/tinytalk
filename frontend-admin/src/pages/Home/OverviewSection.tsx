@@ -19,13 +19,14 @@ import {
   Tr,
   VStack,
 } from "@chakra-ui/react";
+import { format } from "date-fns";
 import { useEffect, useState } from "react";
 import { FaBolt, FaClock, FaSuitcase, FaUserGraduate } from "react-icons/fa";
 import { StatCard } from "../../components/StatCard";
 import type { SearchResponse } from "../../models/base/search.model";
 import type { Class } from "../../models/class.model";
 import { searchClass } from "../../services/class.service";
-import { toGmt7 } from "../../utils/datetime.util";
+import { parseToZonedDate } from "../../utils/datetime.util";
 
 export const OverviewSection = () => {
   const [classes, setClasses] = useState<Class[]>([]);
@@ -169,7 +170,16 @@ export const OverviewSection = () => {
                         <Tr key={c.id}>
                           <Td>{c.name}</Td>
                           <Td>{c.code}</Td>
-                          <Td>{toGmt7(new Date(c.startTime), "dd/MM/yyyy")}</Td>
+                          <Td>
+                            {format(
+                              parseToZonedDate(
+                                c.startTime,
+                                "dd/MM/yyyy",
+                                "Asia/Bangkok"
+                              ),
+                              "yyyy-MM-dd'T'HH:mm:ss"
+                            )}
+                          </Td>
                           <Td>
                             {c.endTime
                               ? new Date(c.endTime).toLocaleString()

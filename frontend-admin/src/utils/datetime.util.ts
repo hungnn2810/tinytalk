@@ -1,15 +1,13 @@
-import { DateTime } from "luxon";
+// Cách này an toàn với mọi môi trường
+import { parse } from "date-fns";
+import * as tz from "date-fns-tz";
 
-export function toGmt7(
-  utcDate: string | Date,
-  formatString: string = "yyyy-MM-dd HH:mm:ss"
-): string {
-  const dt =
-    typeof utcDate === "string"
-      ? DateTime.fromISO(utcDate, { zone: "utc" })
-      : DateTime.fromJSDate(utcDate, { zone: "utc" });
-
-  const gmt7 = dt.setZone("Asia/Bangkok");
-
-  return gmt7.toFormat(formatString);
+export function parseToZonedDate(
+  date: string | Date,
+  formatStr: string,
+  timeZone: string = "Asia/Bangkok"
+): Date {
+  const parsed =
+    typeof date === "string" ? parse(date, formatStr, new Date()) : date;
+  return tz.toZonedTime(parsed, timeZone);
 }

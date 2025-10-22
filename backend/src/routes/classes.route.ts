@@ -8,14 +8,14 @@ import {
   SearchResponse,
 } from "../models/pagination";
 import { parseQuery } from "../utils/parseQuery";
-import { loginValidator } from "../validators/auth.validator";
+import { createClassValidator } from "../validators/class.validator";
 
 const router = express.Router();
 
 // Create
 router.post(
   "/",
-  loginValidator,
+  createClassValidator,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       validateRequest(req);

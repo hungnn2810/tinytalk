@@ -8,7 +8,10 @@ export const createClassValidator = [
     .isISO8601()
     .withMessage("Start time must be a valid ISO 8601 date"),
   body("endTime")
-    .optional()
-    .isISO8601()
+    .optional({ nullable: true })
+    .custom((value) => {
+      if (value === null) return true;
+      return !isNaN(Date.parse(value));
+    })
     .withMessage("End time must be a valid ISO 8601 date"),
 ];

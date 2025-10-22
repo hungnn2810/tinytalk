@@ -1,4 +1,4 @@
-export const CLASS_COLORS = [
+export const COLOR_CODE = [
   "#F44336", // red
   "#3F51B5", // indigo
   "#4CAF50", // green

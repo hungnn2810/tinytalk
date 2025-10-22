@@ -20,7 +20,7 @@ import { searchClass } from "../../services/class.service";
 import { CreateClassModal } from "./CreateClassModal";
 
 export default function ClassesPage() {
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [classes, setClasses] = useState<Class[]>([]);
   const [page, setPage] = useState(1);
   const [metadata, setMetadata] = useState<SearchResponse<Class>["metadata"]>({
@@ -63,7 +63,17 @@ export default function ClassesPage() {
       </Flex>
 
       {/* Modal controlled by state */}
-      <CreateClassModal isOpen={isModalOpen} onClose={closeModal} />
+      <CreateClassModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        onSuccess={() => {
+          // fetch lại danh sách class
+          searchClass({ page, limit: 20 }).then((res) => {
+            setClasses(res.data);
+            setMetadata(res.metadata);
+          });
+        }}
+      />
 
       <Grid
         templateColumns="repeat(auto-fill, minmax(350px, 1fr))"
@@ -80,9 +90,22 @@ export default function ClassesPage() {
               boxShadow="md"
               _hover={{ boxShadow: "lg", transform: "translateY(-2px)" }}
               transition="all 0.2s"
+              position="relative"
             >
-              {/* Header*/}
-              <Flex justifyContent="space-between" align="center">
+              {/* Color bar trên cùng */}
+              <Box
+                position="absolute"
+                top={0}
+                left={0}
+                width="100%"
+                height="4px" // chiều cao thanh màu
+                borderTopLeftRadius="xl"
+                borderTopRightRadius="xl"
+                bg={item.colorCode || "#805AD5"} // dùng colorCode của class, default purple
+              />
+
+              {/* Header */}
+              <Flex justifyContent="space-between" align="center" mt={2}>
                 <Heading fontSize="lg" color="gray.800">
                   {item.name}
                 </Heading>
@@ -94,7 +117,9 @@ export default function ClassesPage() {
               <Stack spacing={2}>
                 <HStack color="gray.600">
                   <Icon as={FiUser} />{" "}
-                  <Text fontSize="sm">{item.students.length} students</Text>
+                  <Text fontSize="sm">
+                    {item.students?.length ?? 0} students
+                  </Text>
                 </HStack>
               </Stack>
             </Box>

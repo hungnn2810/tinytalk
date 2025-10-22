@@ -9,14 +9,18 @@ import {
   hashPassword,
   verifyRefreshToken,
 } from "../utils/auth";
-import { loginValidator } from "../validators/auth.validator";
+import {
+  loginValidator,
+  refreshTokenValidator,
+  registerValidator,
+} from "../validators/auth.validator";
 
 const router = express.Router();
 
 // Register
 router.post(
   "/register",
-  loginValidator,
+  registerValidator,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       validateRequest(req);
@@ -81,7 +85,7 @@ router.post(
 // Refresh token
 router.post(
   "/refresh",
-  loginValidator,
+  refreshTokenValidator,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       validateRequest(req);

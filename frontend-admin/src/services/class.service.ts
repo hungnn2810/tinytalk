@@ -11,8 +11,8 @@ export interface CreateClassRequest {
   name: string;
   code: string;
   colorCode: string;
-  startTime: string;
-  endTime?: string;
+  startTime: Date;
+  endTime?: Date | null;
 }
 
 export async function searchClass(
@@ -25,8 +25,6 @@ export async function searchClass(
 }
 
 export async function createClass(params: CreateClassRequest): Promise<Class> {
-  const res = await apiRequest<Class>("post", "/classes", {
-    data: params,
-  });
+  const res = await apiRequest<Class>("post", "/classes", params);
   return res;
 }
