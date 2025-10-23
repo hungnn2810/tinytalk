@@ -1,6 +1,5 @@
 import {
   Box,
-  Button,
   Center,
   Flex,
   HStack,
@@ -19,8 +18,7 @@ import {
   Tr,
   VStack,
 } from "@chakra-ui/react";
-import { format } from "date-fns";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FaBolt, FaClock, FaSuitcase, FaUserGraduate } from "react-icons/fa";
 import { StatCard } from "../../components/StatCard";
 import type { SearchResponse } from "../../models/base/search.model";
@@ -30,9 +28,8 @@ import { parseToZonedDate } from "../../utils/datetime.util";
 
 export const OverviewSection = () => {
   const [classes, setClasses] = useState<Class[]>([]);
-  const [total] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
+  const [, setPage] = useState(1);
   const [metadata, setMetadata] = useState<SearchResponse<Class>["metadata"]>({
     total: 0,
     page: 1,
@@ -41,36 +38,56 @@ export const OverviewSection = () => {
     hasNextPage: false,
     hasPrevPage: false,
   });
+  const isFetching = useRef(false); // ✅ ngăn gọi API trùng
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
 
-  useEffect(() => {
-    setLoading(true);
-    searchClass({ page, limit: 10 }).then((res) => {
-      setClasses(res.data);
+  const fetchClasses = async (page: number) => {
+    if (isFetching.current) return;
+    isFetching.current = true;
+
+    // ✅ chỉ set loading khi page = 1 (tức là load lần đầu)
+    if (page === 1) setLoading(true);
+    else setIsFetchingMore(true);
+
+    try {
+      const res = await searchClass({ page, limit: 10 });
+
+      if (page === 1) setClasses(res.data);
+      else setClasses((prev) => [...prev, ...res.data]);
+
       setMetadata(res.metadata);
-      setLoading(false);
-    });
-  }, [page]);
-
-  const handlePrev = () => {
-    if (metadata.hasPrevPage) setPage((p) => p - 1);
+      setPage(res.metadata.page);
+    } catch (error) {
+      console.error("Error loading classes:", error);
+    } finally {
+      if (page === 1) setLoading(false);
+      else setIsFetchingMore(false);
+      isFetching.current = false;
+    }
   };
 
+  useEffect(() => {
+    fetchClasses(1);
+  }, []);
+
   const handleNext = () => {
-    if (metadata.hasNextPage) setPage((p) => p + 1);
+    if (!metadata.hasNextPage || isFetching.current) return;
+    fetchClasses(metadata.page + 1);
   };
 
   return (
     <VStack spacing={6} align="stretch" w="full" px={6}>
+      {/* --- Stat Cards --- */}
       <HStack spacing={5} align="stretch" flexWrap="wrap" w="full">
         <StatCard
           icon={<FaSuitcase />}
           label="TOTAL CLASSES"
-          value={62}
+          value={metadata.total}
           tooltip="Total registered classes"
         />
         <StatCard
           icon={<FaSuitcase />}
-          label="PEDING CLASSES"
+          label="PENDING CLASSES"
           value={62}
           tooltip="Total pending classes"
         />
@@ -94,14 +111,22 @@ export const OverviewSection = () => {
         />
       </HStack>
 
-      <Tabs variant="unstyled" w="full">
+      {/* --- Tabs --- */}
+      <Tabs
+        variant="unstyled"
+        w="full"
+        rounded="2xl"
+        shadow="sm"
+        bg="white"
+        p={5}
+      >
         <TabList
           borderBottom="1px solid"
           borderColor="gray.100"
           display="flex"
           alignItems="center"
           gap={6}
-          px={4}
+          px={2}
         >
           {["Classes", "Students", "Homeworks"].map((label) => (
             <Tab
@@ -112,6 +137,7 @@ export const OverviewSection = () => {
               position="relative"
               fontWeight="semibold"
               color="gray.500"
+              _hover={{ color: "purple.600" }}
               _selected={{
                 color: "purple.600",
                 fontWeight: "bold",
@@ -131,7 +157,7 @@ export const OverviewSection = () => {
                 transformOrigin: "center",
                 bg: "purple.500",
                 borderRadius: "full",
-                transition: "transform 180ms ease, opacity 120ms ease",
+                transition: "transform 200ms ease, opacity 120ms ease",
                 opacity: 0,
               }}
             >
@@ -139,6 +165,8 @@ export const OverviewSection = () => {
             </Tab>
           ))}
         </TabList>
+
+        {/* --- Tab Panels --- */}
         <TabPanels>
           <TabPanel>
             <Flex justify="space-between" align="center" mb={4}>
@@ -146,18 +174,39 @@ export const OverviewSection = () => {
                 Classes
               </Text>
               <Text fontSize="sm" color="gray.500">
-                Total: {total}
+                Total: {metadata.total}
               </Text>
             </Flex>
+
             {loading ? (
               <Center py={10}>
                 <Spinner size="lg" color="purple.500" />
               </Center>
             ) : (
               <>
-                <Box overflowX="auto" w="full">
+                {/* --- Table --- */}
+                <Box
+                  overflowY="auto"
+                  maxH="500px"
+                  border="1px solid"
+                  borderColor="gray.100"
+                  rounded="xl"
+                  onScroll={(e) => {
+                    const target = e.currentTarget;
+                    const nearBottom =
+                      target.scrollHeight - target.scrollTop <=
+                      target.clientHeight + 100;
+                    if (
+                      nearBottom &&
+                      metadata.hasNextPage &&
+                      !isFetching.current
+                    ) {
+                      handleNext();
+                    }
+                  }}
+                >
                   <Table variant="simple" minW="1200px">
-                    <Thead bg="gray.50">
+                    <Thead bg="purple.50" position="sticky" top={0} zIndex={1}>
                       <Tr>
                         <Th>Name</Th>
                         <Th>Code</Th>
@@ -166,59 +215,41 @@ export const OverviewSection = () => {
                       </Tr>
                     </Thead>
                     <Tbody>
-                      {classes.map((c) => (
-                        <Tr key={c.id}>
+                      {classes.map((c, i) => (
+                        <Tr
+                          key={c.id}
+                          _hover={{ bg: "purple.50" }}
+                          bg={i % 2 === 0 ? "white" : "gray.50"}
+                        >
                           <Td>{c.name}</Td>
                           <Td>{c.code}</Td>
-                          <Td>
-                            {format(
-                              parseToZonedDate(
-                                c.startTime,
-                                "dd/MM/yyyy",
-                                "Asia/Bangkok"
-                              ),
-                              "yyyy-MM-dd'T'HH:mm:ss"
-                            )}
-                          </Td>
+                          <Td>{parseToZonedDate(c.startTime, "dd/MM/yyyy")}</Td>
                           <Td>
                             {c.endTime
-                              ? new Date(c.endTime).toLocaleString()
-                              : ""}
+                              ? parseToZonedDate(c.endTime, "dd/MM/yyyy")
+                              : "-"}
                           </Td>
                         </Tr>
                       ))}
+                      {loading && (
+                        <Tr>
+                          <Td colSpan={4}>
+                            <Center py={4}>
+                              <Spinner size="sm" color="purple.500" />
+                            </Center>
+                          </Td>
+                        </Tr>
+                      )}
                     </Tbody>
                   </Table>
+                  {isFetchingMore && (
+                    <Center py={4}>
+                      <Spinner size="sm" />
+                    </Center>
+                  )}
                 </Box>
-                <Flex justify="space-between" align="center" mt={4}>
-                  <Button
-                    onClick={handlePrev}
-                    isDisabled={!metadata.hasPrevPage}
-                  >
-                    Previous
-                  </Button>
-                  <Text fontSize="sm" color="gray.500">
-                    Page {metadata.page} of {metadata.totalPages}
-                  </Text>
-                  <Button
-                    onClick={handleNext}
-                    isDisabled={!metadata.hasNextPage}
-                  >
-                    Next
-                  </Button>
-                </Flex>
               </>
             )}
-            {/* <Box overflow="auto">
-            <Table variant="simple" minW="1200px">
-              <Thead bg="gray.50">
-                <Tr>
-                  <Th>Class</Th>
-                  <Th>Student</Th>
-                </Tr>
-              </Thead>
-            </Table>
-          </Box> */}
           </TabPanel>
         </TabPanels>
       </Tabs>

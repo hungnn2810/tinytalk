@@ -18,9 +18,11 @@ export interface CreateClassRequest {
 export async function searchClass(
   params: SearchClassRequest
 ): Promise<SearchResponse<Class>> {
-  const res = await apiRequest<SearchResponse<Class>>("get", "/classes", {
-    params,
-  });
+  const res = await apiRequest<SearchResponse<Class>>(
+    "get",
+    "/classes",
+    params
+  );
   return res;
 }
 

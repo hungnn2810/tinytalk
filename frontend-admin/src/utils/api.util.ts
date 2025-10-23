@@ -11,7 +11,7 @@ export async function apiRequest<TResponse, TBody = unknown>(
     const response = await api.request<TResponse>({
       method,
       url,
-      data,
+      ...(method === "get" ? { params: data } : { data }),
       ...config,
     });
     return response.data;

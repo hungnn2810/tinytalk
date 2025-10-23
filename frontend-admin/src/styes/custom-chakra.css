@@ -1,0 +1,24 @@
+.chakra-modal__overlay {
+  background-color: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  transition: opacity 0.25s ease-in-out;
+}
+
+.chakra-modal__overlay[data-state="entered"] {
+  opacity: 1;
+}
+
+.chakra-modal__body input {
+  background-color: #fff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  padding: 8px 12px !important;
+  width: 100% !important;
+  transition: border-color 0.2s !important;
+}
+
+.create-class-modal input:focus {
+  border-color: #805ad5 !important;
+  outline: none !important;
+}

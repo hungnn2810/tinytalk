@@ -79,9 +79,23 @@ export const LoginPage = () => {
                 <Button
                   isLoading={isSubmitting}
                   loadingText="Whispering to our servers"
-                  size="lg"
-                  colorScheme="purple"
                   type="submit"
+                  bg="purple.500"
+                  color="white"
+                  fontWeight="600"
+                  _hover={{
+                    bgGradient: "linear(to-r, #6b46c1, #805ad5)",
+                    transform: "translateY(-1px)",
+                    boxShadow: "md",
+                  }}
+                  _active={{
+                    transform: "translateY(0)",
+                    boxShadow: "sm",
+                  }}
+                  _disabled={{
+                    opacity: 0.6,
+                    cursor: "not-allowed",
+                  }}
                 >
                   Login
                 </Button>

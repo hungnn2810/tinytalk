@@ -7,7 +7,7 @@ import {
   ModalContent,
   ModalHeader,
   ModalOverlay,
-  VStack,
+  Stack,
 } from "@chakra-ui/react";
 import { Formik, FormikProvider } from "formik";
 import { useState } from "react";
@@ -20,6 +20,7 @@ import {
   createClass,
   type CreateClassRequest,
 } from "../../services/class.service";
+import "./styles/create-class-modal.css";
 
 const CreateClassSchema = Yup.object().shape({
   name: Yup.string().required("Class name is required"),
@@ -90,17 +91,22 @@ export const CreateClassModal = ({
           >
             <ModalOverlay />
             <ModalContent>
-              <ModalHeader>Create a new class</ModalHeader>
+              <ModalHeader className="modal-title">
+                Create a new class
+              </ModalHeader>
               <ModalCloseButton />
-              <ModalBody>
+              <ModalBody px={6} py={5}>
                 <form onSubmit={formik.handleSubmit}>
-                  <VStack align="stretch" spacing={3}>
+                  <Stack spacing={6}>
+                    {/* Class Name */}
                     <InputField name="name" label="Name" />
+
+                    {/* Code + Color */}
                     <HStack
                       display="grid"
                       align="stretch"
                       gridTemplateColumns="4fr 1fr"
-                      gap={3}
+                      gap={4}
                       w="full"
                     >
                       <InputField name="code" label="Code" />
@@ -110,8 +116,8 @@ export const CreateClassModal = ({
                     <HStack
                       display="grid"
                       align="stretch"
-                      gridTemplateColumns="2fr 2fr"
-                      gap={3}
+                      gridTemplateColumns="1fr 1fr"
+                      gap={4}
                       w="full"
                     >
                       {" "}
@@ -125,10 +131,30 @@ export const CreateClassModal = ({
                       />
                     </HStack>
 
-                    <Button colorScheme="purple" type="submit" width="full">
-                      Create
+                    <Button
+                      type="submit"
+                      isLoading={formik.isSubmitting}
+                      loadingText="Creating..."
+                      bg="purple.500"
+                      color="white"
+                      fontWeight="600"
+                      _hover={{
+                        bgGradient: "linear(to-r, #6b46c1, #805ad5)",
+                        transform: "translateY(-1px)",
+                        boxShadow: "md",
+                      }}
+                      _active={{
+                        transform: "translateY(0)",
+                        boxShadow: "sm",
+                      }}
+                      _disabled={{
+                        opacity: 0.6,
+                        cursor: "not-allowed",
+                      }}
+                    >
+                      Create Class
                     </Button>
-                  </VStack>
+                  </Stack>
                 </form>
               </ModalBody>
             </ModalContent>

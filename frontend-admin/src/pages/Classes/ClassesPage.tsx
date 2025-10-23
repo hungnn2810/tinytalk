@@ -20,8 +20,8 @@ import { searchClass } from "../../services/class.service";
 import { CreateClassModal } from "./CreateClassModal";
 
 export default function ClassesPage() {
-  const [, setLoading] = useState(true);
   const [classes, setClasses] = useState<Class[]>([]);
+  const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [metadata, setMetadata] = useState<SearchResponse<Class>["metadata"]>({
     total: 0,
@@ -33,21 +33,31 @@ export default function ClassesPage() {
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  useEffect(() => {
-    setLoading(true);
-    searchClass({ page, limit: 10 }).then((res) => {
+  const fetchClasses = async (page: number) => {
+    console.log("Fetching classes for page:", page);
+    try {
+      const res = await searchClass({ page: page, limit: 10 });
       setClasses(res.data);
       setMetadata(res.metadata);
+    } catch (error) {
+      console.error("Error loading classes:", error);
+    } finally {
       setLoading(false);
-    });
+    }
+  };
+
+  useEffect(() => {
+    fetchClasses(page);
   }, [page]);
 
   const handlePrev = () => {
-    if (metadata.hasPrevPage) setPage((p) => p - 1);
+    if (!metadata.hasNextPage || loading) return; // ✅ ngăn spam click
+    setPage((prev) => prev + 1);
   };
 
   const handleNext = () => {
-    if (metadata.hasNextPage) setPage((p) => p + 1);
+    if (!metadata.hasPrevPage || loading) return;
+    setPage((prev) => prev - 1);
   };
 
   const openModal = () => setIsModalOpen(true);
@@ -126,6 +136,27 @@ export default function ClassesPage() {
           </GridItem>
         ))}
       </Grid>
+      {/* --- Pagination --- */}
+      <Flex justify="space-between" align="center" mt={4}>
+        <Button
+          onClick={handlePrev}
+          isDisabled={!metadata.hasPrevPage}
+          colorScheme="purple"
+          variant="outline"
+        >
+          Previous
+        </Button>
+        <Text fontSize="sm" color="gray.500">
+          Page {metadata.page} of {metadata.totalPages}
+        </Text>
+        <Button
+          onClick={handleNext}
+          isDisabled={!metadata.hasNextPage}
+          colorScheme="purple"
+        >
+          Next
+        </Button>
+      </Flex>
     </Box>
   );
 }

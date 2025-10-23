@@ -12,13 +12,19 @@ import {
   InputLeftElement,
   Text,
 } from "@chakra-ui/react";
-import { FaBook, FaChalkboardTeacher, FaHome } from "react-icons/fa";
+import {
+  FaBook,
+  FaChalkboardTeacher,
+  FaHome,
+  FaUserGraduate,
+} from "react-icons/fa";
 import { NavLink } from "react-router-dom";
 import logo from "../assets/logo.png";
 
 const navItems = [
   { label: "Home", path: "/", icon: FaHome },
   { label: "Classes", path: "/classes", icon: FaChalkboardTeacher },
+  { label: "Students", path: "/students", icon: FaUserGraduate },
   { label: "Homeworks", path: "/homeworks", icon: FaBook },
 ];
 
@@ -65,7 +71,43 @@ export const Navbar = () => {
             {navItems.map(({ label, path, icon }) => (
               <NavLink key={path} to={path} end>
                 {({ isActive }) => (
-                  <Box textAlign="center" position="relative">
+                  <Box
+                    as="span"
+                    position="relative"
+                    textAlign="center"
+                    px={2}
+                    py={1.5}
+                    fontWeight={isActive ? "bold" : "semibold"}
+                    color={isActive ? "purple.600" : "gray.600"}
+                    sx={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      _after: {
+                        content: '""',
+                        position: "absolute",
+                        height: "3px",
+                        width: "70%", // chiếm 70% chiều rộng text
+                        left: "50%",
+                        bottom: "-3px", // nằm gần text hơn
+                        transform: isActive
+                          ? "translateX(-50%) scaleX(1)"
+                          : "translateX(-50%) scaleX(0)",
+                        transformOrigin: "center",
+                        bg: "purple.500",
+                        borderRadius: "full",
+                        transition: "transform 200ms ease, opacity 150ms ease",
+                        opacity: isActive ? 1 : 0,
+                      },
+                      _hover: {
+                        color: "purple.500",
+                        _after: {
+                          transform: "translateX(-50%) scaleX(1)",
+                          opacity: 0.5,
+                        },
+                      },
+                    }}
+                  >
                     <HStack
                       spacing={2}
                       color={isActive ? "purple.600" : "gray.600"}
@@ -74,20 +116,19 @@ export const Navbar = () => {
                       <Text fontWeight="600">{label}</Text>
                     </HStack>
 
-                    {/* underline bar */}
-                    {isActive && (
+                    {/* {isActive && (
                       <Box
                         position="absolute"
                         bottom="0"
                         top="8"
                         left="50%"
                         transform="translateX(-50%)"
-                        w="100%" // shorter than full width
+                        w="full" // shorter than full width
                         h="3px"
                         bg="purple.500"
                         borderRadius="full"
                       />
-                    )}
+                    )} */}
                   </Box>
                 )}
               </NavLink>
@@ -96,9 +137,13 @@ export const Navbar = () => {
 
           <Button
             leftIcon={<AddIcon />}
-            colorScheme="gray"
+            colorScheme="purple"
             variant="outline"
             borderRadius="full"
+            sx={{
+              color: "var(--chakra-colors-purple-500) !important",
+              borderColor: "var(--chakra-colors-purple-500) !important",
+            }}
           >
             Assign homework
           </Button>

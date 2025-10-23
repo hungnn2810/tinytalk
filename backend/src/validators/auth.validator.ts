@@ -37,5 +37,5 @@ export const loginValidator = [
 ];
 
 export const refreshTokenValidator = [
-  body("refreshToken").notEmpty().withMessage("Refresh token is required"),
+  body("token").notEmpty().withMessage("Refresh token is required"),
 ];

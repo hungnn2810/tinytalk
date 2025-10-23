@@ -3,6 +3,7 @@ import { ChakraProvider } from "@chakra-ui/react";
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./providers/AuthProvider";
 import { AppRouter } from "./routes/AppRoute";
+import "./styes/custom-chakra.css";
 
 export const App = () => {
   return (
