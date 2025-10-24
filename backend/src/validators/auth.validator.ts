@@ -1,3 +1,4 @@
+import { $Enums } from "@prisma/client";
 import { body } from "express-validator";
 
 export const registerValidator = [
@@ -18,8 +19,10 @@ export const registerValidator = [
   body("role")
     .notEmpty()
     .withMessage("Role is required")
-    .isIn(["admin", "user"])
-    .withMessage("Role must be either 'admin' or 'user'"),
+    .isIn([$Enums.Role.ADMIN, $Enums.Role.TEACHER, $Enums.Role.STUDENT])
+    .withMessage(
+      `Role must be one of: ${Object.values($Enums.Role).join(", ")}`
+    ),
 ];
 
 export const loginValidator = [

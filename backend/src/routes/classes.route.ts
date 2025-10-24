@@ -21,10 +21,6 @@ router.post(
       validateRequest(req);
       const { name, code, colorCode, startTime, endTime } = req.body;
 
-      if (!name || !code) {
-        return res.status(400).json({ message: "Name and code are required" });
-      }
-
       const existing = await prisma.class.findFirst({
         where: { OR: [{ code }, { name }] },
       });

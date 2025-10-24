@@ -26,12 +26,6 @@ router.post(
       validateRequest(req);
       const { email, password, name, role } = req.body;
 
-      if (!email || !password) {
-        return res
-          .status(400)
-          .json({ message: "Email and password are required" });
-      }
-
       const existing = await prisma.user.findUnique({ where: { email } });
       if (existing) return res.status(400).json({ message: "Email exists" });
 
@@ -90,7 +84,6 @@ router.post(
     try {
       validateRequest(req);
       const { token } = req.body;
-      if (!token) return res.status(401).json({ message: "No token" });
 
       try {
         const payload = verifyRefreshToken(token) as any;
