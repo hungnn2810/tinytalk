@@ -2,11 +2,11 @@ import { $Enums } from "@prisma/client";
 import { body } from "express-validator";
 
 export const registerValidator = [
-  body("email")
+  body("username")
     .notEmpty()
-    .withMessage("Email is required")
-    .isEmail()
-    .withMessage("Email is incorrect format"),
+    .withMessage("Username is required")
+    .matches(/^(0|\+84)(3|5|7|8|9)[0-9]{8}$/)
+    .withMessage("Username must be a valid Vietnamese phone number"),
 
   body("password")
     .notEmpty()
@@ -26,11 +26,11 @@ export const registerValidator = [
 ];
 
 export const loginValidator = [
-  body("email")
+  body("username")
     .notEmpty()
-    .withMessage("Email is required")
-    .isEmail()
-    .withMessage("Email is incorrect format"),
+    .withMessage("Username is required")
+    .matches(/^(0|\+84)(3|5|7|8|9)[0-9]{8}$/)
+    .withMessage("Username must be a valid Vietnamese phone number"),
 
   body("password")
     .notEmpty()

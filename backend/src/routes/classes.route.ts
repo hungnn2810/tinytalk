@@ -8,13 +8,18 @@ import {
   SearchResponse,
 } from "../models/pagination";
 import { parseQuery } from "../utils/parseQuery";
-import { createClassValidator } from "../validators/class.validator";
+import {
+  createClassValidator,
+  updateClassValidator,
+} from "../validators/class.validator";
 
 const router = express.Router();
 
 // Create
 router.post(
   "/",
+  authenticate,
+  authorize(Role.ADMIN, Role.TEACHER),
   createClassValidator,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -87,6 +92,7 @@ router.get(
   }
 );
 
+// Get by id
 router.get(
   "/:id",
   authenticate,
@@ -100,6 +106,40 @@ router.get(
     }
 
     res.json(entity);
+  }
+);
+
+// Update
+router.put(
+  "/:id",
+  authenticate,
+  authorize(Role.ADMIN, Role.TEACHER),
+  updateClassValidator,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      validateRequest(req);
+      const { id } = req.params;
+      const { name, code, colorCode, startTime, endTime } = req.body;
+
+      const existing = await prisma.class.findFirst({
+        where: {
+          OR: [{ code }, { name }],
+          NOT: { id },
+        },
+      });
+
+      if (existing)
+        return res.status(400).json({ message: "Class name or code exists" });
+
+      const updated = await prisma.class.update({
+        where: { id },
+        data: { name, code, colorCode, startTime, endTime },
+      });
+
+      res.json(updated);
+    } catch (err) {
+      next(err);
+    }
   }
 );
 

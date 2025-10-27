@@ -24,17 +24,18 @@ router.post(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       validateRequest(req);
-      const { email, password, name, role } = req.body;
+      const { username, password, name, role } = req.body;
 
-      const existing = await prisma.user.findUnique({ where: { email } });
-      if (existing) return res.status(400).json({ message: "Email exists" });
+      const existing = await prisma.user.findUnique({ where: { username } });
+      if (existing)
+        return res.status(400).json({ message: "User name exists" });
 
       const hashed = await hashPassword(password);
       const user = await prisma.user.create({
-        data: { email, password: hashed, name, role },
+        data: { username, password: hashed, name, role },
       });
 
-      res.json({ id: user.id, email: user.email, role: user.role });
+      res.json({ id: user.id, username: user.username, role: user.role });
     } catch (err) {
       next(err);
     }
@@ -48,14 +49,18 @@ router.post(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       validateRequest(req);
-      const { email, password } = req.body;
-      const user = await prisma.user.findUnique({ where: { email } });
+      const { username, password } = req.body;
+      const user = await prisma.user.findUnique({ where: { username } });
       if (!user)
-        return res.status(400).json({ message: "Invalid email or password" });
+        return res
+          .status(400)
+          .json({ message: "Invalid user name or password" });
 
       const match = await comparePassword(password, user.password);
       if (!match)
-        return res.status(400).json({ message: "Invalid email or password" });
+        return res
+          .status(400)
+          .json({ message: "Invalid user name or password" });
 
       const accessToken = generateAccessToken(user);
       const refreshToken = generateRefreshToken(user);
@@ -65,7 +70,7 @@ router.post(
         refreshToken,
         user: {
           id: user.id,
-          email: user.email,
+          username: user.username,
           name: user.name,
           role: user.role,
         },

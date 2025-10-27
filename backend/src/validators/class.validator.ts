@@ -15,3 +15,5 @@ export const createClassValidator = [
     })
     .withMessage("End time must be a valid ISO 8601 date"),
 ];
+
+export const updateClassValidator = createClassValidator;

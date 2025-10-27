@@ -18,9 +18,12 @@ import { useAuth } from "../hooks/useAuth";
 import { login } from "../services/auth.service";
 
 const LoginSchema = Yup.object().shape({
-  email: Yup.string()
-    .email("Email is incorrect format")
-    .required("Email is required"),
+  username: Yup.string()
+    .matches(
+      /^(0|\+84)(3|5|7|8|9)[0-9]{8}$/,
+      "Username must be a valid Vietnamese phone number"
+    )
+    .required("Username is required"),
   password: Yup.string()
     .required("Password is required")
     .min(6, "Password must have at least 6 characters"),
@@ -30,10 +33,13 @@ export const LoginPage = () => {
   const auth = useAuth();
   const navigate = useNavigate();
 
-  const handleLogin = async (values: { email: string; password: string }) => {
+  const handleLogin = async (values: {
+    username: string;
+    password: string;
+  }) => {
     try {
       const res = await login(values);
-      auth.login({ name: res.user.name, email: res.user.email });
+      auth.login({ name: res.user.name, username: res.user.username });
       navigate("/");
     } catch (err: unknown) {
       console.error(err);
@@ -53,7 +59,7 @@ export const LoginPage = () => {
         <Heading as="h1">Log in.</Heading>
 
         <Formik
-          initialValues={{ email: "", password: "" }}
+          initialValues={{ username: "", password: "" }}
           validationSchema={LoginSchema}
           onSubmit={async (values, { setSubmitting }) => {
             await handleLogin(values);
@@ -64,9 +70,10 @@ export const LoginPage = () => {
             <Form>
               <Stack my="4" spacing="6">
                 <InputField
-                  name="email"
-                  type="email"
-                  label="Email"
+                  name="username"
+                  type="text"
+                  label="Phone Number"
+                  placeholder="0912345678"
                   leftAddon={<AtSignIcon color="purple.500" />}
                 />
                 <InputField

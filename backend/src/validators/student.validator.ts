@@ -14,8 +14,9 @@ export const createStudentValidator = [
   body("dateOfBirth")
     .notEmpty()
     .withMessage("Date of birth is required")
-    .isISO8601()
-    .withMessage("Date of birth must be a valid ISO 8601 date"),
+    .isDate({ format: "YYYY-MM-DD" })
+    .withMessage("Date of birth must be in format YYYY-MM-DD"),
+
   body("status")
     .notEmpty()
     .withMessage("Status is required")
@@ -28,11 +29,17 @@ export const createStudentValidator = [
       `Status must be one of: ${Object.values($Enums.StudentStatus).join(", ")}`
     ),
 
-  body("email")
+  body("classIds")
+    .optional({ nullable: true })
+    .isArray()
+    .withMessage("classIds must be an array"),
+
+  body("username")
     .notEmpty()
-    .withMessage("Email is required")
-    .isEmail()
-    .withMessage("Email is incorrect format"),
+    .withMessage("Username is required")
+    .matches(/^(0|\+84)(3|5|7|8|9)[0-9]{8}$/)
+    .withMessage("Username must be a valid Vietnamese phone number"),
+
   body("password")
     .notEmpty()
     .withMessage("Password is required")

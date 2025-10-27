@@ -9,7 +9,7 @@ datasource db {
 
 model User {
   id        String   @id @default(uuid())
-  email     String   @unique
+  username  String   @unique
   password  String
   name      String
   role      Role
@@ -65,7 +65,7 @@ model Class {
   updatedAt DateTime  @default(now())
 
   timetables ClassTimetable[]
-  students   Student[]
+  students   StudentClassMap[]
 }
 
 model ClassTimetable {
@@ -90,8 +90,17 @@ model Student {
   updatedAt   DateTime      @default(now())
 
   user    User               @relation(fields: [user_id], references: [id])
-  class   Class?             @relation(fields: [class_id], references: [id])
+  classes StudentClassMap[]
   parents StudentParentMap[]
+}
+
+model StudentClassMap {
+  studentId String
+  classId   String
+  student   Student @relation(fields: [studentId], references: [id])
+  class     Class   @relation(fields: [classId], references: [id])
+
+  @@id([studentId, classId])
 }
 
 model Parent {
