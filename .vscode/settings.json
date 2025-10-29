@@ -1,6 +1,3 @@
 {
-  "editor.tabSize": 2,
-  "vscode-pets.petSize": "small",
-  "vscode-pets.theme": "forest",
-  "vscode-pets.throwBallWithMouse": true
+  "editor.tabSize": 2
 }

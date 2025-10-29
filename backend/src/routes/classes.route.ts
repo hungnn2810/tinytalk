@@ -1,12 +1,12 @@
 import { Role } from "@prisma/client";
 import express, { NextFunction, Request, Response } from "express";
-import { prisma } from "../../prisma/prisma";
 import { authenticate, authorize } from "../middlewares/auth";
 import { validateRequest } from "../middlewares/validateRequest";
 import {
   createSearchResponseMetadata,
   SearchResponse,
 } from "../models/pagination";
+import { prisma } from "../prisma/prisma";
 import { parseQuery } from "../utils/parseQuery";
 import {
   createClassValidator,

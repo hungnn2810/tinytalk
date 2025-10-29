@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import express from "express";
-import { prisma } from "../../prisma/prisma";
 import { validateRequest } from "../middlewares/validateRequest";
+import { prisma } from "../prisma/prisma";
 import {
   comparePassword,
   generateAccessToken,

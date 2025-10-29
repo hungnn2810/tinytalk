@@ -1,0 +1,29 @@
+services:
+  db:
+    image: postgres:17-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Pass1234!
+      POSTGRES_DB: tinytalk
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  backend:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      PORT: 5000
+      JWT_SECRET: d2c4ce3515e764ec80ffde7017617181
+      JWT_EXPIRES_IN: 60m
+      JWT_REFRESH_SECRET: 346689538bff55cf3006a293e15fcb22
+      JWT_REFRESH_EXPIRES_IN: 7d
+      DATABASE_URL: postgresql://postgres:Pass1234!@db:5432/tinytalk
+    depends_on:
+      - db
+
+volumes:
+  pgdata:
