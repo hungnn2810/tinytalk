@@ -4,17 +4,19 @@ import express from "express";
 import { errorHandler } from "./middlewares/errorHandler";
 import authRoutes from "./routes/auth.route";
 import classesRoutes from "./routes/classes.route";
+import parentRoutes from "./routes/parent.route";
 import studentRoutes from "./routes/student.route";
+
 dotenv.config();
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Auth routes
 app.use("/auth", authRoutes);
 app.use("/classes", classesRoutes);
 app.use("/students", studentRoutes);
+app.use("/parents", parentRoutes);
 
 app.get("/health-check", (req, res) => {
   res.send({ message: "Server healthy" });

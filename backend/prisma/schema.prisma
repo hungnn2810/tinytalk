@@ -66,6 +66,7 @@ model Class {
 
   timetables ClassTimetable[]
   students   StudentClassMap[]
+  homeworks  HomeworkAssignment[]
 }
 
 model ClassTimetable {
@@ -121,3 +122,157 @@ model StudentParentMap {
 
   @@id([studentId, parentId])
 }
+
+model Library {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  homeworks Homework[]
+}
+
+enum HomeworkType {
+  PHENOMENON
+  MULTIPLE_CHOICE
+  FILLING_BLANK
+  REORDER
+  MATCHING
+  ANSWER_QUESTION
+}
+
+model Homework {
+  id          String       @id @default(uuid())
+  name        String
+  type        HomeworkType
+  description String?
+  content     Json?
+  libraryId   String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  library     Library              @relation(fields: [libraryId], references: [id])
+  assignments HomeworkAssignment[]
+}
+
+model HomeworkAssignment {
+  id         String   @id @default(uuid())
+  homeworkId String
+  classId    String
+  assignedAt DateTime @default(now())
+  expireAt   DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  homework Homework @relation(fields: [homeworkId], references: [id])
+  class    Class    @relation(fields: [classId], references: [id])
+
+  @@unique([homeworkId, classId])
+}
+
+/**
+ * Example JSON content for Homework content field - Type: PHENOMENON
+ * [
+ * {
+ * "word": "apple",
+ * "phonetic": "/ˈæp.əl/",
+ * "audioUrl": "https://cdn.example.com/audio/apple.mp3",
+ * "imageUrl": "https://cdn.example.com/images/apple.png"
+ * },
+ * {
+ * "word": "banana",
+ * "phonetic": "/bəˈnɑː.nə/",
+ * "audioUrl": "https://cdn.example.com/audio/banana.mp3",
+ * "imageUrl": "https://cdn.example.com/images/banana.png"
+ * },
+ * {
+ * "word": "orange",
+ * "phonetic": "/ˈɒr.ɪndʒ/",
+ * "audioUrl": "https://cdn.example.com/audio/orange.mp3",
+ * "imageUrl": "https://cdn.example.com/images/orange.png"
+ * }
+ * ]
+ */
+
+/**
+ * Example JSON content for Homework content field - Type: MULTIPLE_CHOICE
+ * [
+ * {
+ * "question": "What is the capital of France?",
+ * "options": ["Berlin", "Madrid", "Paris", "Rome"],
+ * "correctAnswers": [1]
+ * },
+ * {
+ * "question": "Which planet is known as the Red Planet?",
+ * "options": ["Earth", "Mars", "Jupiter", "Saturn"],
+ * "correctAnswers": [0, 2]
+ * }
+ * ]
+ */
+
+/**
+ * Example JSON content for Homework content field - Type: FILLING_BLANK
+ * [
+ * {
+ * "sentence": "The capital of Japan is ___ and the currency is ___.",
+ * "answers": ["Tokyo", "Yen"]
+ * },
+ * {
+ * "sentence": "The color of the sky is ___.",
+ * "answers": ["blue"]
+ * }
+ * ]
+ */
+
+/**
+ * Example JSON content for Homework content field - Type: REORDER
+ * [
+ * {
+ * "instruction": "Arrange the steps to make a cup of tea.",
+ * "items": ["Boil water", "Add tea leaves", "Pour into cup", "Add sugar"],
+ * "correctOrder": [0, 1, 2, 3]
+ * },
+ * {
+ * "instruction": "Arrange the planets from nearest to farthest from the Sun.",
+ * "items": ["Earth", "Venus", "Mercury", "Mars"],
+ * "correctOrder": [2, 1, 0, 3]
+ * }
+ * ]
+ */
+
+/**
+ * Example JSON content for Homework content field - Type: MATCHING
+ * [
+ * {
+ * "leftItems": ["Cat", "Dog", "Fish"],
+ * "rightItems": ["Swims", "Barks", "Meows"],
+ * "correctPairs": [
+ * [0, 2],
+ * [1, 1],
+ * [2, 0]
+ * ]
+ * },
+ * {
+ * "leftItems": ["Sun", "Earth"],
+ * "rightItems": ["Planet", "Star"],
+ * "correctPairs": [
+ * [0, 1],
+ * [1, 0]
+ * ]
+ * }
+ * ]
+ */
+
+/**
+ * Example JSON content for Homework content field - Type: ANSWER_QUESTION
+ * [
+ * {
+ * "question": "Why does the Moon appear to change shape during the month?",
+ * "expectedKeywords": ["phases", "sunlight", "orbit", "Earth"]
+ * },
+ * {
+ * "question": "What causes day and night?",
+ * "expectedKeywords": ["rotation", "Earth", "axis"]
+ * }
+ * ]
+ */

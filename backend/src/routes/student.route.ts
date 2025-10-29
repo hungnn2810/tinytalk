@@ -30,7 +30,7 @@ router.post(
         status,
         username,
         password,
-        parents,
+        parentIds,
       } = req.body;
 
       const existing = await prisma.student.findFirst({
@@ -58,28 +58,16 @@ router.post(
         }
       }
 
-      // Create or get existing parents first
-      const parentIds: string[] = [];
-      for (const p of parents) {
-        let parent = await prisma.parent.findFirst({
-          where: {
-            phoneNumber: p.phoneNumber,
-            relationshipToStudent: p.relationshipToStudent,
-          },
+      if (parentIds && parentIds.length > 0) {
+        const parents = await prisma.parent.findMany({
+          where: { id: { in: parentIds } },
         });
 
-        // If parent doesn't exist, create new one
-        if (!parent) {
-          parent = await prisma.parent.create({
-            data: {
-              name: p.name,
-              phoneNumber: p.phoneNumber,
-              relationshipToStudent: p.relationshipToStudent,
-            },
-          });
+        if (parents.length !== parentIds.length) {
+          return res
+            .status(400)
+            .json({ message: "One or more parents not found" });
         }
-
-        parentIds.push(parent.id);
       }
 
       const hashed = await hashPassword(password);
