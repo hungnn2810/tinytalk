@@ -4,6 +4,7 @@ import ClassesPage from "../pages/Classes/ClassesPage";
 import HomePage from "../pages/Home/HomePage";
 import HomeworksPage from "../pages/HomeworksPage";
 import { LoginPage } from "../pages/LoginPage";
+import StudentPage from "../pages/Students/StudentPage";
 import { PrivateRoute } from "./PrivateRoute";
 
 export const AppRouter = () => {
@@ -16,6 +17,7 @@ export const AppRouter = () => {
           <Route index element={<HomePage />} />
           <Route path="classes" element={<ClassesPage />} />
           <Route path="homeworks" element={<HomeworksPage />} />
+          <Route path="students" element={<StudentPage />} />
         </Route>
       </Route>
     </Routes>

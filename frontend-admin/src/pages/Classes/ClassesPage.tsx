@@ -20,7 +20,7 @@ import { searchClass } from "../../services/class.service";
 import { CreateClassModal } from "./CreateClassModal";
 
 export default function ClassesPage() {
-  const [classes, setClasses] = useState<Class[]>([]);
+  const [data, setData] = useState<Class[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [metadata, setMetadata] = useState<SearchResponse<Class>["metadata"]>({
@@ -34,10 +34,9 @@ export default function ClassesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const fetchClasses = async (page: number) => {
-    console.log("Fetching classes for page:", page);
     try {
       const res = await searchClass({ page: page, limit: 10 });
-      setClasses(res.data);
+      setData(res.data);
       setMetadata(res.metadata);
     } catch (error) {
       console.error("Error loading classes:", error);
@@ -79,7 +78,7 @@ export default function ClassesPage() {
         onSuccess={() => {
           // fetch lại danh sách class
           searchClass({ page, limit: 20 }).then((res) => {
-            setClasses(res.data);
+            setData(res.data);
             setMetadata(res.metadata);
           });
         }}
@@ -90,7 +89,7 @@ export default function ClassesPage() {
         gap={6}
         mt={6}
       >
-        {classes.map((item) => (
+        {data.map((item) => (
           <GridItem key={item.id}>
             <Box
               borderWidth="1px"
@@ -137,26 +136,29 @@ export default function ClassesPage() {
         ))}
       </Grid>
       {/* --- Pagination --- */}
-      <Flex justify="space-between" align="center" mt={4}>
-        <Button
-          onClick={handlePrev}
-          isDisabled={!metadata.hasPrevPage}
-          colorScheme="purple"
-          variant="outline"
-        >
-          Previous
-        </Button>
-        <Text fontSize="sm" color="gray.500">
-          Page {metadata.page} of {metadata.totalPages}
-        </Text>
-        <Button
-          onClick={handleNext}
-          isDisabled={!metadata.hasNextPage}
-          colorScheme="purple"
-        >
-          Next
-        </Button>
-      </Flex>
+
+      {metadata.page > 1 && (
+        <Flex justify="space-between" align="center" mt={4}>
+          <Button
+            onClick={handlePrev}
+            isDisabled={!metadata.hasPrevPage}
+            colorScheme="purple"
+            variant="outline"
+          >
+            Previous
+          </Button>
+          <Text fontSize="sm" color="gray.500">
+            Page {metadata.page} of {metadata.totalPages}
+          </Text>
+          <Button
+            onClick={handleNext}
+            isDisabled={!metadata.hasNextPage}
+            colorScheme="purple"
+          >
+            Next
+          </Button>
+        </Flex>
+      )}
     </Box>
   );
 }

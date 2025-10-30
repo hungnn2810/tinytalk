@@ -6,6 +6,7 @@ import {
   Input,
   InputGroup,
   InputLeftAddon,
+  InputRightAddon,
 } from "@chakra-ui/react";
 import type { JSX } from "@emotion/react/jsx-runtime";
 import { useField } from "formik";
@@ -16,11 +17,12 @@ interface IInputFieldProps {
   type?: string;
   label?: string;
   leftAddon?: ReactNode;
+  rightAddon?: ReactNode;
   placeholder?: string;
 }
 
 export const InputField = (props: IInputFieldProps): JSX.Element => {
-  const { label, leftAddon, ...restOfProps } = props;
+  const { label, leftAddon, rightAddon, ...restOfProps } = props;
   const [field, meta] = useField(props);
   return (
     <FormControl id={props.name} isInvalid={!!meta.error && !!meta.touched}>
@@ -35,6 +37,7 @@ export const InputField = (props: IInputFieldProps): JSX.Element => {
       <InputGroup>
         {leftAddon && <InputLeftAddon bg="purple.50" children={leftAddon} />}
         <Input focusBorderColor="purple.500" {...field} {...restOfProps} />
+        {rightAddon && <InputRightAddon bg="purple.50" children={rightAddon} />}
       </InputGroup>
 
       <Box minH="20px" mt="1">
