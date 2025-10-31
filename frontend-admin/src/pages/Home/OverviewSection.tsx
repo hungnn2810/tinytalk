@@ -112,14 +112,7 @@ export const OverviewSection = () => {
       </HStack>
 
       {/* --- Tabs --- */}
-      <Tabs
-        variant="unstyled"
-        w="full"
-        rounded="2xl"
-        shadow="sm"
-        bg="white"
-        p={5}
-      >
+      <Tabs w="full" rounded="2xl" shadow="sm" bg="white" p={5}>
         <TabList
           borderBottom="1px solid"
           borderColor="gray.100"
@@ -205,7 +198,7 @@ export const OverviewSection = () => {
                     }
                   }}
                 >
-                  <Table variant="simple" minW="1200px">
+                  <Table variant="simple">
                     <Thead bg="purple.50" position="sticky" top={0} zIndex={1}>
                       <Tr>
                         <Th>Name</Th>

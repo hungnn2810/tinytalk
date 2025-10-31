@@ -1,16 +1,21 @@
 import {
   Button,
+  Divider,
   HStack,
+  Icon,
   Modal,
   ModalBody,
   ModalCloseButton,
   ModalContent,
+  ModalFooter,
   ModalHeader,
   ModalOverlay,
   Stack,
+  Text,
 } from "@chakra-ui/react";
 import { Formik, FormikProvider } from "formik";
 import { useState } from "react";
+import { FiCheck } from "react-icons/fi";
 import * as Yup from "yup";
 import { ColorPicker } from "../../components/ColorPicker";
 import { DateTimePicker } from "../../components/DateTimePicker";
@@ -88,18 +93,35 @@ export const CreateClassModal = ({
             onClose={onClose}
             isCentered
             motionPreset="slideInBottom"
+            size="lg"
           >
-            <ModalOverlay />
-            <ModalContent>
-              <ModalHeader className="modal-title">
-                Create a new class
+            <ModalOverlay bg="blackAlpha.400" backdropFilter="blur(4px)" />
+            <ModalContent borderRadius="full" boxShadow="2xl">
+              <ModalHeader
+                className="modal-title"
+                bgGradient="linear(to-r, purple.500, purple.600)"
+                color="white"
+                py={5}
+                fontSize="xl"
+                fontWeight="700"
+                display="flex"
+                alignItems="center"
+              >
+                <Text>Create New Class</Text>
               </ModalHeader>
-              <ModalCloseButton />
-              <ModalBody px={6} py={5}>
+              <ModalCloseButton color="white" size="lg" top={5} right={5} />
+
+              <Divider borderColor="purple.100" />
+
+              <ModalBody px={8} py={8}>
                 <form onSubmit={formik.handleSubmit}>
                   <Stack spacing={6}>
                     {/* Class Name */}
-                    <InputField name="name" label="Name" />
+                    <InputField
+                      name="name"
+                      label="Class Name"
+                      placeholder="e.g., Mathematics 101"
+                    />
 
                     {/* Code + Color */}
                     <HStack
@@ -109,7 +131,11 @@ export const CreateClassModal = ({
                       gap={4}
                       w="full"
                     >
-                      <InputField name="code" label="Code" />
+                      <InputField
+                        name="code"
+                        label="Class Code"
+                        placeholder="e.g., MATH101"
+                      />
                       <ColorPicker name="colorCode" label="Color" />
                     </HStack>
 
@@ -120,7 +146,6 @@ export const CreateClassModal = ({
                       gap={4}
                       w="full"
                     >
-                      {" "}
                       <DateTimePicker<CreateClassRequest>
                         name="startTime"
                         label="Start Time"
@@ -130,33 +155,52 @@ export const CreateClassModal = ({
                         label="End Time (optional)"
                       />
                     </HStack>
-
-                    <Button
-                      type="submit"
-                      isLoading={formik.isSubmitting}
-                      loadingText="Creating..."
-                      bg="purple.500"
-                      color="white"
-                      fontWeight="600"
-                      _hover={{
-                        bgGradient: "linear(to-r, #6b46c1, #805ad5)",
-                        transform: "translateY(-1px)",
-                        boxShadow: "md",
-                      }}
-                      _active={{
-                        transform: "translateY(0)",
-                        boxShadow: "sm",
-                      }}
-                      _disabled={{
-                        opacity: 0.6,
-                        cursor: "not-allowed",
-                      }}
-                    >
-                      Create Class
-                    </Button>
                   </Stack>
                 </form>
               </ModalBody>
+
+              <Divider borderColor="gray.100" />
+
+              <ModalFooter px={8} py={6} bg="gray.50">
+                <HStack spacing={3} w="full" justify="flex-end">
+                  <Button
+                    variant="ghost"
+                    onClick={onClose}
+                    fontWeight="600"
+                    _hover={{
+                      bg: "gray.100",
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    onClick={formik.submitForm}
+                    isLoading={formik.isSubmitting}
+                    loadingText="Creating..."
+                    leftIcon={<Icon as={FiCheck} />}
+                    bgGradient="linear(to-r, purple.500, purple.600)"
+                    color="white"
+                    fontWeight="600"
+                    px={8}
+                    _hover={{
+                      bgGradient: "linear(to-r, purple.600, purple.700)",
+                      transform: "translateY(-2px)",
+                      boxShadow: "lg",
+                    }}
+                    _active={{
+                      transform: "translateY(0)",
+                      boxShadow: "md",
+                    }}
+                    _disabled={{
+                      opacity: 0.6,
+                      cursor: "not-allowed",
+                    }}
+                  >
+                    Create Class
+                  </Button>
+                </HStack>
+              </ModalFooter>
             </ModalContent>
           </Modal>
         </FormikProvider>

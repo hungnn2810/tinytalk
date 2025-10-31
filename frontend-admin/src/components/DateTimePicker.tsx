@@ -31,9 +31,10 @@ export function DateTimePicker<T>({ name, label }: DateTimePickerProps<T>) {
     <Box>
       {label && (
         <FormLabel
-          mb={1}
+          mb="2"
           htmlFor={name as string}
-          fontWeight="semibold"
+          fontWeight="600"
+          fontSize="sm"
           color="gray.700"
         >
           {label}
@@ -45,9 +46,26 @@ export function DateTimePicker<T>({ name, label }: DateTimePickerProps<T>) {
         showTimeSelect
         timeFormat="HH:mm"
         timeIntervals={15}
-        dateFormat="yyyy-MM-dd HH:mm"
+        dateFormat="dd/MM/yyyy HH:mm"
         placeholderText="Select date & time"
-        customInput={<Input />}
+        customInput={
+          <Input
+            focusBorderColor="purple.500"
+            borderRadius="lg"
+            borderColor="gray.200"
+            _hover={{
+              borderColor: "purple.300",
+            }}
+            _focus={{
+              borderColor: "purple.500",
+              boxShadow: "0 0 0 1px var(--chakra-colors-purple-500)",
+            }}
+            transition="all 0.2s"
+            bg="white"
+          />
+        }
+        popperClassName="date-picker-popper"
+        popperPlacement="bottom-start"
       />
     </Box>
   );

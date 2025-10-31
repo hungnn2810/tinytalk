@@ -1,3 +1,4 @@
+import { ApiMethod } from "../enums/apiMethod";
 import type { SearchParams, SearchResponse } from "../models/base/search.model";
 import type { Class } from "../models/class.model";
 import { apiRequest } from "../utils/api.util";
@@ -19,7 +20,7 @@ export async function searchClass(
   params: SearchClassRequest
 ): Promise<SearchResponse<Class>> {
   const res = await apiRequest<SearchResponse<Class>>(
-    "get",
+    ApiMethod.GET,
     "/classes",
     params
   );
@@ -27,6 +28,6 @@ export async function searchClass(
 }
 
 export async function createClass(params: CreateClassRequest): Promise<Class> {
-  const res = await apiRequest<Class>("post", "/classes", params);
+  const res = await apiRequest<Class>(ApiMethod.POST, "/classes", params);
   return res;
 }

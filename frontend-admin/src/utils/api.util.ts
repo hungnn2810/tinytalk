@@ -1,8 +1,9 @@
 import type { AxiosError, AxiosRequestConfig } from "axios";
 import api from "../api/index";
+import { ApiMethod } from "../enums/apiMethod";
 
 export async function apiRequest<TResponse, TBody = unknown>(
-  method: "get" | "post" | "put" | "patch" | "delete",
+  method: ApiMethod,
   url: string,
   data?: TBody,
   config?: AxiosRequestConfig
@@ -11,7 +12,7 @@ export async function apiRequest<TResponse, TBody = unknown>(
     const response = await api.request<TResponse>({
       method,
       url,
-      ...(method === "get" ? { params: data } : { data }),
+      ...(method === ApiMethod.GET ? { params: data } : { data }),
       ...config,
     });
     return response.data;

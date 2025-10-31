@@ -24,11 +24,18 @@ interface IInputFieldProps {
 export const InputField = (props: IInputFieldProps): JSX.Element => {
   const { label, leftAddon, rightAddon, ...restOfProps } = props;
   const [field, meta] = useField(props);
+
   return (
     <FormControl id={props.name} isInvalid={!!meta.error && !!meta.touched}>
       {/* Label */}
       {label && (
-        <FormLabel mb="1" htmlFor={props.name}>
+        <FormLabel
+          mb="2"
+          htmlFor={props.name}
+          fontWeight="600"
+          fontSize="sm"
+          color="gray.700"
+        >
           {label}
         </FormLabel>
       )}
@@ -36,12 +43,27 @@ export const InputField = (props: IInputFieldProps): JSX.Element => {
       {/* Input */}
       <InputGroup>
         {leftAddon && <InputLeftAddon bg="purple.50" children={leftAddon} />}
-        <Input focusBorderColor="purple.500" {...field} {...restOfProps} />
+        <Input
+          focusBorderColor="purple.500"
+          borderRadius="lg"
+          borderColor="gray.200"
+          _hover={{
+            borderColor: "purple.300",
+          }}
+          _focus={{
+            borderColor: "purple.500",
+            boxShadow: "0 0 0 1px var(--chakra-colors-purple-500)",
+          }}
+          transition="all 0.2s"
+          bg="white"
+          {...field}
+          {...restOfProps}
+        />
         {rightAddon && <InputRightAddon bg="purple.50" children={rightAddon} />}
       </InputGroup>
 
       <Box minH="20px" mt="1">
-        <FormErrorMessage m="0" fontSize="sm">
+        <FormErrorMessage m="0" fontSize="sm" color="red.500">
           {meta.touched ? meta.error : ""}
         </FormErrorMessage>
       </Box>
