@@ -31,3 +31,7 @@ export async function createClass(params: CreateClassRequest): Promise<Class> {
   const res = await apiRequest<Class>(ApiMethod.POST, "/classes", params);
   return res;
 }
+
+export async function deleteClass(id: string): Promise<void> {
+  await apiRequest<void>(ApiMethod.DELETE, `/classes/${id}`);
+}

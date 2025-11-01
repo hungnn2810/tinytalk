@@ -143,4 +143,26 @@ router.put(
   }
 );
 
+// Delete
+router.delete(
+  "/:id",
+  authenticate,
+  authorize(Role.ADMIN, Role.TEACHER),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const existing = await prisma.class.findUnique({ where: { id } });
+
+      if (!existing) {
+        return res.status(404).json({ message: "Not found" });
+      }
+
+      await prisma.class.delete({ where: { id } });
+      res.status(204).send();
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
 export default router;

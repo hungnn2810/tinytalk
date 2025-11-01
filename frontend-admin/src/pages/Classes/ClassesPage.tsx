@@ -9,17 +9,28 @@ import {
   Heading,
   HStack,
   Icon,
+  IconButton,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
   Stack,
   Text,
+  useToast,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import { FiMoreVertical, FiUser } from "react-icons/fi";
+import { FiClock, FiMoreVertical, FiUser } from "react-icons/fi";
+import { ConfirmDialog } from "../../components/ConfirmDialog";
+import Pagination from "../../components/Pagination";
 import type { SearchResponse } from "../../models/base/search.model";
 import type { Class } from "../../models/class.model";
-import { searchClass } from "../../services/class.service";
+import { deleteClass, searchClass } from "../../services/class.service";
+import { parseToZonedDate } from "../../utils/datetime.util";
+import { CustomToast } from "../../utils/toast.util";
 import { CreateClassModal } from "./CreateClassModal";
 
 export default function ClassesPage() {
+  const toast = useToast();
   const [data, setData] = useState<Class[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -32,6 +43,9 @@ export default function ClassesPage() {
     hasPrevPage: false,
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchClasses = async (page: number) => {
     try {
@@ -49,18 +63,71 @@ export default function ClassesPage() {
     fetchClasses(page);
   }, [page]);
 
-  const handlePrev = () => {
+  const handleNext = () => {
     if (!metadata.hasNextPage || loading) return; // ✅ ngăn spam click
-    setPage((prev) => prev + 1);
+    setPage((next) => next + 1);
   };
 
-  const handleNext = () => {
+  const handlePrev = () => {
     if (!metadata.hasPrevPage || loading) return;
     setPage((prev) => prev - 1);
   };
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
+
+  const handleDeleteClick = (id: string) => {
+    setItemToDelete(id);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!itemToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      await deleteClass(itemToDelete);
+      await fetchClasses(page);
+
+      // Show success toast
+      toast({
+        duration: 3000,
+        isClosable: true,
+        position: "top-right",
+        render: () => (
+          <CustomToast
+            title="Class deleted"
+            description="The class has been successfully deleted."
+            status="success"
+          />
+        ),
+      });
+    } catch (error) {
+      console.error("Error deleting class:", error);
+
+      // Show error toast
+      toast({
+        duration: 5000,
+        isClosable: true,
+        position: "top-right",
+        render: () => (
+          <CustomToast
+            title="Delete failed"
+            description="Failed to delete class. Please try again."
+            status="error"
+          />
+        ),
+      });
+    } finally {
+      setIsDeleting(false);
+      setIsDeleteDialogOpen(false);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setIsDeleteDialogOpen(false);
+    setItemToDelete(null);
+  };
 
   return (
     <Box pt={8}>
@@ -110,24 +177,62 @@ export default function ClassesPage() {
                 height="4px" // chiều cao thanh màu
                 borderTopLeftRadius="xl"
                 borderTopRightRadius="xl"
-                bg={item.colorCode || "#805AD5"} // dùng colorCode của class, default purple
+                bg={item.colorCode || "#805AD5"}
               />
 
               {/* Header */}
               <Flex justifyContent="space-between" align="center" mt={2}>
                 <Heading fontSize="lg" color="gray.800">
-                  {item.name}
+                  {item.name}{" "}
+                  <Text as="span" fontWeight="400">
+                    ({item.code})
+                  </Text>
                 </Heading>
-                <Icon as={FiMoreVertical} color="gray.400" cursor="pointer" />
+                <Menu>
+                  <MenuButton
+                    as={IconButton}
+                    icon={<Icon as={FiMoreVertical} />}
+                    variant="ghost"
+                    color="gray.400"
+                    size="sm"
+                    aria-label="Options"
+                  />
+                  <MenuList minW="120px">
+                    <MenuItem
+                      onClick={() => {
+                        console.log("Update class:", item.id);
+                        // TODO: Open update modal
+                      }}
+                    >
+                      Update
+                    </MenuItem>
+                    <MenuItem
+                      color="red.500"
+                      onClick={() => handleDeleteClick(item.id)}
+                    >
+                      Delete
+                    </MenuItem>
+                  </MenuList>
+                </Menu>
               </Flex>
 
               <Divider my={3} />
 
               <Stack spacing={2}>
                 <HStack color="gray.600">
-                  <Icon as={FiUser} />{" "}
+                  <Icon as={FiUser} />
                   <Text fontSize="sm">
                     {item.students?.length ?? 0} students
+                  </Text>
+                </HStack>
+
+                <HStack color="gray.600">
+                  <Icon as={FiClock} />
+                  <Text fontSize="sm">
+                    {parseToZonedDate(item.startTime, "dd/MM/yyyy")}
+                    {!item.endTime
+                      ? ""
+                      : ` -> ${parseToZonedDate(item.endTime, "dd/MM/yyyy")}`}
                   </Text>
                 </HStack>
               </Stack>
@@ -135,30 +240,28 @@ export default function ClassesPage() {
           </GridItem>
         ))}
       </Grid>
-      {/* --- Pagination --- */}
 
-      {metadata.page > 1 && (
-        <Flex justify="space-between" align="center" mt={4}>
-          <Button
-            onClick={handlePrev}
-            isDisabled={!metadata.hasPrevPage}
-            colorScheme="purple"
-            variant="outline"
-          >
-            Previous
-          </Button>
-          <Text fontSize="sm" color="gray.500">
-            Page {metadata.page} of {metadata.totalPages}
-          </Text>
-          <Button
-            onClick={handleNext}
-            isDisabled={!metadata.hasNextPage}
-            colorScheme="purple"
-          >
-            Next
-          </Button>
-        </Flex>
-      )}
+      <Pagination
+        page={page}
+        totalPages={metadata.totalPages}
+        hasNextPage={metadata.hasNextPage}
+        hasPrevPage={metadata.hasPrevPage}
+        onNext={handleNext}
+        onPrev={handlePrev}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Class"
+        message="Are you sure you want to delete?"
+        confirmText="Delete"
+        cancelText="Cancel"
+        confirmColorScheme="red"
+        isLoading={isDeleting}
+      />
     </Box>
   );
 }

@@ -12,6 +12,7 @@ import {
   ModalOverlay,
   Stack,
   Text,
+  useToast,
 } from "@chakra-ui/react";
 import { Formik, FormikProvider } from "formik";
 import { useState } from "react";
@@ -21,10 +22,12 @@ import { ColorPicker } from "../../components/ColorPicker";
 import { DateTimePicker } from "../../components/DateTimePicker";
 import { InputField } from "../../components/InputField";
 import { COLOR_CODE } from "../../constants/colorCode";
+import type { ApiError } from "../../models/base/error.model";
 import {
   createClass,
   type CreateClassRequest,
 } from "../../services/class.service";
+import { CustomToast } from "../../utils/toast.util";
 import "./styles/create-class-modal.css";
 
 const CreateClassSchema = Yup.object().shape({
@@ -46,6 +49,7 @@ export const CreateClassModal = ({
   onClose,
   onSuccess,
 }: CreateClassModalProps) => {
+  const toast = useToast();
   const [formValues] = useState<CreateClassRequest>({
     name: "",
     code: "",
@@ -69,9 +73,41 @@ export const CreateClassModal = ({
       resetForm();
       onClose();
       onSuccess?.();
+
+      // Show success toast
+      toast({
+        duration: 3000,
+        isClosable: true,
+        position: "top-right",
+        render: () => (
+          <CustomToast
+            title="Class created"
+            description="The class has been successfully created."
+            status="success"
+          />
+        ),
+      });
+
       return createdClass;
     } catch (err: unknown) {
-      console.error(err);
+      // Extract error message from API response
+      const error = err as ApiError;
+      const errorMessage =
+        error?.message || "Failed to create class. Please try again.";
+
+      // Show error toast with API message
+      toast({
+        duration: 5000,
+        isClosable: true,
+        position: "top-right",
+        render: () => (
+          <CustomToast
+            title="Create failed"
+            description={errorMessage}
+            status="error"
+          />
+        ),
+      });
     }
   };
 
@@ -119,8 +155,8 @@ export const CreateClassModal = ({
                     {/* Class Name */}
                     <InputField
                       name="name"
-                      label="Class Name"
-                      placeholder="e.g., Mathematics 101"
+                      label="Name"
+                      placeholder="e.g., Jolly Phonics"
                     />
 
                     {/* Code + Color */}
@@ -133,8 +169,8 @@ export const CreateClassModal = ({
                     >
                       <InputField
                         name="code"
-                        label="Class Code"
-                        placeholder="e.g., MATH101"
+                        label="Code"
+                        placeholder="e.g., JOLLY101"
                       />
                       <ColorPicker name="colorCode" label="Color" />
                     </HStack>
@@ -149,24 +185,23 @@ export const CreateClassModal = ({
                       <DateTimePicker<CreateClassRequest>
                         name="startTime"
                         label="Start Time"
+                        dateOnly
                       />
                       <DateTimePicker<CreateClassRequest>
                         name="endTime"
                         label="End Time (optional)"
+                        dateOnly
                       />
                     </HStack>
                   </Stack>
                 </form>
               </ModalBody>
 
-              <Divider borderColor="gray.100" />
-
-              <ModalFooter px={8} py={6} bg="gray.50">
+              <ModalFooter px={8}>
                 <HStack spacing={3} w="full" justify="flex-end">
                   <Button
                     variant="ghost"
                     onClick={onClose}
-                    fontWeight="600"
                     _hover={{
                       bg: "gray.100",
                     }}
@@ -181,8 +216,6 @@ export const CreateClassModal = ({
                     leftIcon={<Icon as={FiCheck} />}
                     bgGradient="linear(to-r, purple.500, purple.600)"
                     color="white"
-                    fontWeight="600"
-                    px={8}
                     _hover={{
                       bgGradient: "linear(to-r, purple.600, purple.700)",
                       transform: "translateY(-2px)",
@@ -197,7 +230,7 @@ export const CreateClassModal = ({
                       cursor: "not-allowed",
                     }}
                   >
-                    Create Class
+                    Create
                   </Button>
                 </HStack>
               </ModalFooter>

@@ -22,3 +22,24 @@
   border-color: #805ad5 !important;
   outline: none !important;
 }
+
+/* .chakra-alert {
+  color: black !important;
+  background-color: #fff !important;
+}
+
+.chakra-alert[data-status="success"] .chakra-alert__icon {
+  color: #22c55e !important;
+}
+
+.chakra-alert[data-status="error"] .chakra-alert__icon {
+  color: #ef4444 !important;
+}
+
+.chakra-alert[data-status="warning"] .chakra-alert__icon {
+  color: #f59e0b !important;
+}
+
+.chakra-alert[data-status="info"] .chakra-alert__icon {
+  color: #3b82f6 !important;
+} */

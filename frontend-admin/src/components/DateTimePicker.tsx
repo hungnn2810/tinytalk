@@ -1,6 +1,6 @@
 import { Box, FormLabel, Input } from "@chakra-ui/react";
 import { useFormikContext } from "formik";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "./styles/datetime-picker.css";
@@ -9,23 +9,91 @@ interface DateTimePickerProps<T> {
   name: keyof T;
   label?: string;
   className?: string;
+  dateOnly?: boolean;
 }
 
-export function DateTimePicker<T>({ name, label }: DateTimePickerProps<T>) {
+export function DateTimePicker<T>({
+  name,
+  label,
+  dateOnly = false,
+}: DateTimePickerProps<T>) {
   const { values, setFieldValue } = useFormikContext<T>();
 
   const value = values[name];
-  const selectedDate =
-    value && typeof value === "string"
-      ? new Date(value)
-      : (value as Date | null);
+
+  const selectedDate = (() => {
+    if (!value) return null;
+
+    const date =
+      typeof value === "string" ? new Date(value) : (value as unknown as Date);
+
+    if (dateOnly && date) {
+      // Create a new date with time set to 00:00:00
+      const dateWithoutTime = new Date(date);
+      dateWithoutTime.setHours(0, 0, 0, 0);
+      return dateWithoutTime;
+    }
+
+    return date;
+  })();
 
   const handleChange = useCallback(
     (date: Date | null) => {
-      setFieldValue(name as string, date);
+      if (!date) {
+        setFieldValue(name as string, null);
+        return;
+      }
+
+      if (dateOnly) {
+        const utcString = new Date(
+          Date.UTC(
+            date.getFullYear(),
+            date.getMonth(),
+            date.getDate(),
+            0,
+            0,
+            0,
+            0
+          )
+        ).toISOString();
+        setFieldValue(name as string, utcString);
+      } else {
+        setFieldValue(name as string, date.toISOString());
+      }
     },
-    [name, setFieldValue]
+    [name, setFieldValue, dateOnly]
   );
+
+  useEffect(() => {
+    if (dateOnly && value) {
+      const date =
+        typeof value === "string"
+          ? new Date(value)
+          : (value as unknown as Date);
+
+      // Nếu giờ khác 0,0,0,0 thì reset
+      if (
+        date.getHours() !== 0 ||
+        date.getMinutes() !== 0 ||
+        date.getSeconds() !== 0 ||
+        date.getMilliseconds() !== 0
+      ) {
+        const utcString = new Date(
+          Date.UTC(
+            date.getFullYear(),
+            date.getMonth(),
+            date.getDate(),
+            0,
+            0,
+            0,
+            0
+          )
+        ).toISOString();
+
+        setFieldValue(name as string, utcString, false);
+      }
+    }
+  }, [dateOnly, value, name, setFieldValue]);
 
   return (
     <Box>
@@ -43,11 +111,11 @@ export function DateTimePicker<T>({ name, label }: DateTimePickerProps<T>) {
       <DatePicker
         selected={selectedDate}
         onChange={handleChange}
-        showTimeSelect
+        showTimeSelect={!dateOnly}
         timeFormat="HH:mm"
         timeIntervals={15}
-        dateFormat="dd/MM/yyyy HH:mm"
-        placeholderText="Select date & time"
+        dateFormat={dateOnly ? "dd/MM/yyyy" : "dd/MM/yyyy HH:mm"}
+        placeholderText={dateOnly ? "Select date" : "Select date & time"}
         customInput={
           <Input
             focusBorderColor="purple.500"

@@ -12,10 +12,13 @@ import {
   Tr,
 } from "@chakra-ui/react";
 import { Form, Formik } from "formik";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { InputField } from "../../components/InputField";
+import Pagination from "../../components/Pagination";
 import { SelectField } from "../../components/SelectField";
+import type { SearchResponse } from "../../models/base/search.model";
 import type { Student } from "../../models/student.model";
+import { searchStudent } from "../../services/student.service";
 
 export default function StudentPage() {
   const [data, setData] = useState<Student[]>([]);
@@ -43,6 +46,20 @@ export default function StudentPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  useEffect(() => {
+    fetchStudents(page);
+  }, [page]);
+
+  const handleNext = () => {
+    if (!metadata.hasNextPage || loading) return; // ✅ ngăn spam click
+    setPage((next) => next + 1);
+  };
+
+  const handlePrev = () => {
+    if (!metadata.hasPrevPage || loading) return;
+    setPage((prev) => prev - 1);
   };
 
   const openModal = () => setIsModalOpen(true);
@@ -128,6 +145,15 @@ export default function StudentPage() {
           </Tbody>
         </Table>
       </Box>
+
+      <Pagination
+        page={page}
+        totalPages={metadata.totalPages}
+        hasNextPage={metadata.hasNextPage}
+        hasPrevPage={metadata.hasPrevPage}
+        onNext={handleNext}
+        onPrev={handlePrev}
+      />
     </Box>
   );
 }
