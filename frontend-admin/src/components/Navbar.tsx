@@ -1,160 +1,224 @@
-import { AddIcon, HamburgerIcon, SearchIcon } from "@chakra-ui/icons";
+import { AddIcon, SearchIcon } from "@chakra-ui/icons";
 import {
   Box,
   Button,
   Flex,
   HStack,
   Icon,
-  IconButton,
   Image,
   Input,
   InputGroup,
   InputLeftElement,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
   Text,
 } from "@chakra-ui/react";
+import { useState } from "react";
 import {
   FaBook,
   FaChalkboardTeacher,
+  FaFile,
   FaHome,
   FaUserGraduate,
 } from "react-icons/fa";
 import { NavLink } from "react-router-dom";
 import logo from "../assets/logo.png";
+import { CreateClassModal } from "../pages/Classes/CreateClassModal";
 
 const navItems = [
   { label: "Home", path: "/", icon: FaHome },
   { label: "Classes", path: "/classes", icon: FaChalkboardTeacher },
   { label: "Students", path: "/students", icon: FaUserGraduate },
-  { label: "Homeworks", path: "/homeworks", icon: FaBook },
+  { label: "Library", path: "/library", icon: FaBook },
 ];
 
 export const Navbar = () => {
+  const [isModalCreateClassOpen, setIsModalCreateClassOpen] = useState(false);
+
+  const menuItems = [
+    {
+      label: "Class",
+      icon: FaChalkboardTeacher,
+      onClick: () => {
+        setIsModalCreateClassOpen(true);
+        console.log(isModalCreateClassOpen);
+      },
+    },
+    { label: "Student", icon: FaUserGraduate },
+    { label: "Library", icon: FaBook },
+    { label: "Homework", icon: FaFile },
+  ];
   return (
     <Box
       bg="white"
-      px={4}
-      py={2}
-      boxShadow="sm"
+      px={8}
+      py={3}
+      boxShadow="0 2px 8px rgba(0, 0, 0, 0.05)"
       position="sticky"
-      top="0"
-      zIndex="1000"
+      top={0}
+      zIndex={1000}
+      borderBottom="1px"
+      borderColor="gray.100"
     >
-      <Flex alignItems="center" justifyContent="space-between">
+      <Flex justifyContent="space-between" alignItems="center">
         {/* Left: Logo */}
-        <HStack spacing={1} w="35%">
-          <Image src={logo} alt="TinyTalk" boxSize="48px" />
+        <HStack spacing={3}>
+          <Image
+            src={logo}
+            alt="TinyTalk"
+            boxSize="40px"
+            transition="transform 0.2s"
+            _hover={{ transform: "scale(1.05)" }}
+          />
           <Box>
-            <Text fontWeight="bold" color="pink.500" fontSize="lg">
+            <Text
+              fontWeight="bold"
+              bgGradient="linear(to-r, pink.500, purple.500)"
+              bgClip="text"
+              fontSize="xl"
+              letterSpacing="tight"
+            >
               TinyTalk
             </Text>
           </Box>
+        </HStack>
 
+        {/* Center: Navigation menu */}
+        <HStack spacing={1}>
+          {navItems.map(({ label, path, icon }) => (
+            <NavLink key={path} to={path} end>
+              {({ isActive }) => (
+                <Box
+                  as="span"
+                  position="relative"
+                  px={4}
+                  py={2}
+                  borderRadius="lg"
+                  fontWeight="600"
+                  fontSize="sm"
+                  color={isActive ? "purple.600" : "gray.600"}
+                  bg={isActive ? "purple.50" : "transparent"}
+                  transition="all 0.2s ease"
+                  cursor="pointer"
+                  sx={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    _hover: {
+                      color: "purple.600",
+                      bg: isActive ? "purple.50" : "gray.50",
+                      transform: "translateY(-1px)",
+                    },
+                  }}
+                >
+                  <HStack spacing={2}>
+                    <Icon
+                      as={icon}
+                      boxSize={4}
+                      color={isActive ? "purple.500" : "gray.500"}
+                    />
+                    <Text>{label}</Text>
+                  </HStack>
+                </Box>
+              )}
+            </NavLink>
+          ))}
+        </HStack>
+
+        {/* Right: Search bar and New button */}
+        <HStack spacing={3}>
           {/* Search bar */}
-          <Box flex="1" mx={5}>
-            <InputGroup>
+          <Box w="240px">
+            <InputGroup size="md">
               <InputLeftElement pointerEvents="none">
-                <SearchIcon color="gray.400" />
+                <SearchIcon color="gray.400" boxSize={4} />
               </InputLeftElement>
               <Input
                 type="text"
+                placeholder="Search..."
                 borderRadius="full"
                 bg="gray.50"
-                _focus={{ bg: "white", borderColor: "purple.400" }}
+                border="1px"
+                borderColor="gray.200"
+                fontSize="sm"
+                _hover={{
+                  borderColor: "purple.300",
+                  bg: "white",
+                }}
+                _focus={{
+                  bg: "white",
+                  borderColor: "purple.400",
+                  boxShadow: "0 0 0 1px var(--chakra-colors-purple-400)",
+                }}
+                transition="all 0.2s"
               />
             </InputGroup>
           </Box>
-        </HStack>
 
-        {/* Right: menu */}
-        <HStack spacing={4}>
-          <HStack spacing={10} display={{ base: "none", md: "flex" }}>
-            {navItems.map(({ label, path, icon }) => (
-              <NavLink key={path} to={path} end>
-                {({ isActive }) => (
-                  <Box
-                    as="span"
-                    position="relative"
-                    textAlign="center"
-                    px={2}
-                    py={1.5}
-                    fontWeight={isActive ? "bold" : "semibold"}
-                    color={isActive ? "purple.600" : "gray.600"}
-                    sx={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      _after: {
-                        content: '""',
-                        position: "absolute",
-                        height: "3px",
-                        width: "70%", // chiếm 70% chiều rộng text
-                        left: "50%",
-                        bottom: "-3px", // nằm gần text hơn
-                        transform: isActive
-                          ? "translateX(-50%) scaleX(1)"
-                          : "translateX(-50%) scaleX(0)",
-                        transformOrigin: "center",
-                        bg: "purple.500",
-                        borderRadius: "full",
-                        transition: "transform 200ms ease, opacity 150ms ease",
-                        opacity: isActive ? 1 : 0,
-                      },
-                      _hover: {
-                        color: "purple.500",
-                        _after: {
-                          transform: "translateX(-50%) scaleX(1)",
-                          opacity: 0.5,
-                        },
-                      },
-                    }}
-                  >
-                    <HStack
-                      spacing={2}
-                      color={isActive ? "purple.600" : "gray.600"}
-                    >
-                      <Icon as={icon} boxSize={5} />
-                      <Text fontWeight="600">{label}</Text>
-                    </HStack>
-
-                    {/* {isActive && (
-                      <Box
-                        position="absolute"
-                        bottom="0"
-                        top="8"
-                        left="50%"
-                        transform="translateX(-50%)"
-                        w="full" // shorter than full width
-                        h="3px"
-                        bg="purple.500"
-                        borderRadius="full"
-                      />
-                    )} */}
-                  </Box>
-                )}
-              </NavLink>
-            ))}
-          </HStack>
-
-          <Button
-            leftIcon={<AddIcon />}
-            colorScheme="purple"
-            variant="outline"
-            borderRadius="full"
-            sx={{
-              color: "var(--chakra-colors-purple-500) !important",
-              borderColor: "var(--chakra-colors-purple-500) !important",
-            }}
-          >
-            Assign homework
-          </Button>
-
-          <IconButton
-            aria-label="Menu"
-            icon={<HamburgerIcon />}
-            variant="ghost"
-            borderRadius="full"
-            display={{ base: "flex", md: "none" }}
-          />
+          {/* New button */}
+          <Menu>
+            <MenuButton
+              as={Button}
+              leftIcon={<AddIcon boxSize={3} />}
+              bgGradient="linear(to-r, purple.500, purple.600)"
+              color="white"
+              borderRadius="full"
+              px={6}
+              size="md"
+              fontWeight="600"
+              fontSize="sm"
+              _hover={{
+                bgGradient: "linear(to-r, purple.600, purple.700)",
+                transform: "translateY(-2px)",
+                boxShadow: "lg",
+              }}
+              _active={{
+                transform: "translateY(0)",
+                boxShadow: "md",
+              }}
+              boxShadow="md"
+              transition="all 0.2s"
+            >
+              New
+            </MenuButton>
+            <MenuList
+              boxShadow="xl"
+              borderRadius="xl"
+              py={2}
+              border="1px"
+              borderColor="gray.100"
+              minW="200px"
+              mt={2}
+            >
+              {menuItems.map(({ label, icon: IconComponent, onClick }) => (
+                <MenuItem
+                  key={label}
+                  icon={
+                    <Icon as={IconComponent} color="purple.500" boxSize={4} />
+                  }
+                  onClick={onClick}
+                  borderRadius="md"
+                  mx={2}
+                  fontSize="sm"
+                  fontWeight="500"
+                  _hover={{
+                    bg: "purple.50",
+                    color: "purple.700",
+                  }}
+                  transition="all 0.15s"
+                >
+                  {label}
+                </MenuItem>
+              ))}
+            </MenuList>
+            <CreateClassModal
+              isOpen={isModalCreateClassOpen}
+              onClose={() => setIsModalCreateClassOpen(false)}
+              onSuccess={() => {}}
+            />
+          </Menu>
         </HStack>
       </Flex>
     </Box>

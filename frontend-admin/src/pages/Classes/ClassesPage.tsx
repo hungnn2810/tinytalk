@@ -133,8 +133,25 @@ export default function ClassesPage() {
     <Box pt={8}>
       <Flex justifyContent="space-between" alignItems="center">
         <Heading size="lg">My Classes</Heading>
-        <Button colorScheme="purple" leftIcon={<AddIcon />} onClick={openModal}>
-          Create a class
+        <Button
+          bgGradient="linear(to-r, purple.500, purple.600)"
+          color="white"
+          borderRadius="full"
+          px={6}
+          size="md"
+          fontWeight="600"
+          fontSize="sm"
+          _hover={{
+            bgGradient: "linear(to-r, purple.600, purple.700)",
+            transform: "translateY(-2px)",
+            boxShadow: "lg",
+          }}
+          boxShadow="md"
+          transition="all 0.2s"
+          leftIcon={<AddIcon />}
+          onClick={openModal}
+        >
+          New class
         </Button>
       </Flex>
 

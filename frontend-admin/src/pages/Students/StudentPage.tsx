@@ -21,7 +21,6 @@ import type { Student } from "../../models/student.model";
 import { searchStudent } from "../../services/student.service";
 
 export default function StudentPage() {
-  const [data, setData] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [metadata, setMetadata] = useState<SearchResponse<Student>["metadata"]>(
@@ -34,12 +33,10 @@ export default function StudentPage() {
       hasPrevPage: false,
     }
   );
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const fetchStudents = async (page: number) => {
     try {
       const res = await searchStudent({ page: page, limit: 20 });
-      setData(res.data);
       setMetadata(res.metadata);
     } catch (error) {
       console.error("Error loading classes:", error);
@@ -62,9 +59,6 @@ export default function StudentPage() {
     setPage((prev) => prev - 1);
   };
 
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
-
   const classes = [
     { id: "1", name: "Class A" },
     { id: "2", name: "Class B" },
@@ -75,8 +69,24 @@ export default function StudentPage() {
     <Box pt={8}>
       <Flex justifyContent="space-between" alignItems="center">
         <Heading size="lg">My Students</Heading>
-        <Button colorScheme="purple" leftIcon={<AddIcon />} onClick={openModal}>
-          Register new student
+        <Button
+          bgGradient="linear(to-r, purple.500, purple.600)"
+          color="white"
+          borderRadius="full"
+          px={6}
+          size="md"
+          fontWeight="600"
+          fontSize="sm"
+          _hover={{
+            bgGradient: "linear(to-r, purple.600, purple.700)",
+            transform: "translateY(-2px)",
+            boxShadow: "lg",
+          }}
+          boxShadow="md"
+          transition="all 0.2s"
+          leftIcon={<AddIcon />}
+        >
+          New student
         </Button>
       </Flex>
 
@@ -92,7 +102,7 @@ export default function StudentPage() {
           initialValues={{ name: "", classId: "" }}
           onSubmit={(values) => console.log(values)}
         >
-          {({ handleSubmit, setFieldValue, values }) => (
+          {({ handleSubmit }) => (
             <Form onSubmit={handleSubmit}>
               <Flex gap={4} direction="row" align="flex-start">
                 <Box w="350px">
@@ -112,7 +122,23 @@ export default function StudentPage() {
                     ))}
                   </SelectField>
                 </Box>
-                <Button type="submit" colorScheme="purple" px={6}>
+                <Button
+                  type="submit"
+                  bgGradient="linear(to-r, purple.500, purple.600)"
+                  color="white"
+                  borderRadius="full"
+                  px={6}
+                  size="md"
+                  fontWeight="600"
+                  fontSize="sm"
+                  _hover={{
+                    bgGradient: "linear(to-r, purple.600, purple.700)",
+                    transform: "translateY(-2px)",
+                    boxShadow: "lg",
+                  }}
+                  boxShadow="md"
+                  transition="all 0.2s"
+                >
                   Search
                 </Button>
               </Flex>

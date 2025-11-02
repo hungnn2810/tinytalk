@@ -9,6 +9,23 @@
   opacity: 1;
 }
 
+.chakra-modal__content {
+  border-radius: 16px !important;
+  overflow: hidden;
+  animation: modalFadeIn 0.3s ease-out;
+}
+
+.chakra-modal__header {
+  font-size: 1.5rem;
+  font-weight: 700;
+  position: relative;
+}
+
+
+.chakra-modal__body {
+  background: linear-gradient(to bottom, #ffffff 0%, #fefeff 100%);
+}
+
 .chakra-modal__body input {
   background-color: #fff !important;
   border: 1px solid #e2e8f0 !important;
@@ -23,23 +40,15 @@
   outline: none !important;
 }
 
-/* .chakra-alert {
-  color: black !important;
-  background-color: #fff !important;
-}
 
-.chakra-alert[data-status="success"] .chakra-alert__icon {
-  color: #22c55e !important;
-}
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(20px);
+  }
 
-.chakra-alert[data-status="error"] .chakra-alert__icon {
-  color: #ef4444 !important;
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
-
-.chakra-alert[data-status="warning"] .chakra-alert__icon {
-  color: #f59e0b !important;
-}
-
-.chakra-alert[data-status="info"] .chakra-alert__icon {
-  color: #3b82f6 !important;
-} */

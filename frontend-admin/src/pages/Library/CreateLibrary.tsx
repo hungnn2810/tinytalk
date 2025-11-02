@@ -18,61 +18,47 @@ import { Formik, FormikProvider } from "formik";
 import { useState } from "react";
 import { FiCheck } from "react-icons/fi";
 import * as Yup from "yup";
-import { ColorPicker } from "../../components/ColorPicker";
-import { DateTimePicker } from "../../components/DateTimePicker";
 import { InputField } from "../../components/InputField";
-import { COLOR_CODE } from "../../constants/colorCode";
 import type { ApiError } from "../../models/base/error.model";
 import {
-  createClass,
-  type CreateClassRequest,
-} from "../../services/class.service";
+  type CreateLibraryRequest,
+  createLibrary,
+} from "../../services/library.service";
 import { CustomToast } from "../../utils/toast.util";
 
-const CreateClassSchema = Yup.object().shape({
-  name: Yup.string().required("Class name is required"),
-  code: Yup.string().required("Class code is required"),
-  colorCode: Yup.string().required("Class color code is required"),
-  startTime: Yup.date().required("Start time is required"),
-  endTime: Yup.date().nullable(),
+const CreateLibrarySchema = Yup.object().shape({
+  name: Yup.string().required("Library name is required"),
 });
 
-interface CreateClassModalProps {
+interface CreateLibraryModelProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
 }
 
-export const CreateClassModal = ({
+export const CreateLibraryModal = ({
   isOpen,
   onClose,
   onSuccess,
-}: CreateClassModalProps) => {
+}: CreateLibraryModelProps) => {
   const toast = useToast();
-  const [formValues] = useState<CreateClassRequest>({
+  const [formValues] = useState<CreateLibraryRequest>({
     name: "",
-    code: "",
-    colorCode: COLOR_CODE[0],
-    startTime: new Date(),
-    endTime: null,
   });
 
   const handleCreate = async (
-    values: CreateClassRequest,
+    values: CreateLibraryRequest,
     resetForm: () => void
   ) => {
     try {
-      const payload: CreateClassRequest = {
+      const payload: CreateLibraryRequest = {
         ...values,
-        startTime: values.startTime,
-        endTime: values.endTime ?? null,
       };
 
-      const createdClass = await createClass(payload);
+      const createdLibrary = await createLibrary(payload);
       resetForm();
       onClose();
       onSuccess?.();
-
       // Show success toast
       toast({
         duration: 3000,
@@ -80,19 +66,19 @@ export const CreateClassModal = ({
         position: "top-right",
         render: () => (
           <CustomToast
-            title="Class created"
-            description="The class has been successfully created."
+            title="Library created"
+            description="The library has been successfully created."
             status="success"
           />
         ),
       });
 
-      return createdClass;
+      return createdLibrary;
     } catch (err: unknown) {
       // Extract error message from API response
       const error = err as ApiError;
       const errorMessage =
-        error?.message || "Failed to create class. Please try again.";
+        error?.message || "Failed to create library. Please try again.";
 
       // Show error toast with API message
       toast({
@@ -113,7 +99,7 @@ export const CreateClassModal = ({
   return (
     <Formik
       initialValues={formValues}
-      validationSchema={CreateClassSchema}
+      validationSchema={CreateLibrarySchema}
       enableReinitialize={false}
       onSubmit={async (values, { resetForm }) => {
         await handleCreate(values, resetForm);
@@ -142,7 +128,7 @@ export const CreateClassModal = ({
                 display="flex"
                 alignItems="center"
               >
-                <Text>New class</Text>
+                <Text>New library</Text>
               </ModalHeader>
               <ModalCloseButton color="white" size="lg" top={5} right={5} />
 
@@ -151,47 +137,11 @@ export const CreateClassModal = ({
               <ModalBody px={8} py={8}>
                 <form onSubmit={formik.handleSubmit}>
                   <Stack spacing={6}>
-                    {/* Class Name */}
                     <InputField
                       name="name"
                       label="Name"
                       placeholder="e.g., Jolly Phonics"
                     />
-
-                    {/* Code + Color */}
-                    <HStack
-                      display="grid"
-                      align="stretch"
-                      gridTemplateColumns="4fr 1fr"
-                      gap={4}
-                      w="full"
-                    >
-                      <InputField
-                        name="code"
-                        label="Code"
-                        placeholder="e.g., JOLLY101"
-                      />
-                      <ColorPicker name="colorCode" label="Color" />
-                    </HStack>
-
-                    <HStack
-                      display="grid"
-                      align="stretch"
-                      gridTemplateColumns="1fr 1fr"
-                      gap={4}
-                      w="full"
-                    >
-                      <DateTimePicker<CreateClassRequest>
-                        name="startTime"
-                        label="Start Time"
-                        dateOnly
-                      />
-                      <DateTimePicker<CreateClassRequest>
-                        name="endTime"
-                        label="End Time (optional)"
-                        dateOnly
-                      />
-                    </HStack>
                   </Stack>
                 </form>
               </ModalBody>
