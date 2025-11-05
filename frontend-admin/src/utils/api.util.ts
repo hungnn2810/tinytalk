@@ -1,6 +1,6 @@
 import type { AxiosError, AxiosRequestConfig } from "axios";
 import api from "../api/index";
-import { ApiMethod } from "../enums/apiMethod";
+import { ApiMethod } from "../enums/ApiMethod";
 
 export async function apiRequest<TResponse, TBody = unknown>(
   method: ApiMethod,

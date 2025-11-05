@@ -3,7 +3,8 @@ import dotenv from "dotenv";
 import express from "express";
 import { errorHandler } from "./middlewares/errorHandler";
 import authRoutes from "./routes/auth.route";
-import classesRoutes from "./routes/classes.route";
+import classesRoutes from "./routes/class.route";
+import homeworkRoutes from "./routes/homework.route";
 import libraryRoutes from "./routes/library.route";
 import parentRoutes from "./routes/parent.route";
 import studentRoutes from "./routes/student.route";
@@ -19,6 +20,7 @@ app.use("/classes", classesRoutes);
 app.use("/students", studentRoutes);
 app.use("/parents", parentRoutes);
 app.use("/libraries", libraryRoutes);
+app.use("/homeworks", homeworkRoutes);
 
 app.get("/health-check", (req, res) => {
   res.send({ message: "Server healthy" });

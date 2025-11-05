@@ -7,7 +7,6 @@ import {
   SearchResponse,
 } from "../models/pagination";
 import { prisma } from "../prisma/prisma";
-import { hashPassword } from "../utils/auth";
 import { parseQuery } from "../utils/parseQuery";
 import { createStudentValidator } from "../validators/student.validator";
 
@@ -22,16 +21,8 @@ router.post(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       validateRequest(req);
-      const {
-        name,
-        classIds,
-        gender,
-        dateOfBirth,
-        status,
-        username,
-        password,
-        parentIds,
-      } = req.body;
+      const { name, gender, dateOfBirth, status, classIds, parentId, userId } =
+        req.body;
 
       const existing = await prisma.student.findFirst({
         where: { name },
@@ -40,11 +31,11 @@ router.post(
       if (existing) return res.status(400).json({ message: "Student exists" });
 
       const existingUser = await prisma.user.findUnique({
-        where: { username },
+        where: { id: userId },
       });
 
       if (existingUser)
-        return res.status(400).json({ message: "User name exists" });
+        return res.status(400).json({ message: "User not found" });
 
       if (classIds && classIds.length > 0) {
         const classes = await prisma.class.findMany({
@@ -58,27 +49,12 @@ router.post(
         }
       }
 
-      if (parentIds && parentIds.length > 0) {
-        const parents = await prisma.parent.findMany({
-          where: { id: { in: parentIds } },
-        });
-
-        if (parents.length !== parentIds.length) {
-          return res
-            .status(400)
-            .json({ message: "One or more parents not found" });
-        }
-      }
-
-      const hashed = await hashPassword(password);
-      const user = await prisma.user.create({
-        data: {
-          username: username,
-          password: hashed,
-          name: name,
-          role: "STUDENT",
-        },
+      const existingParent = await prisma.user.findUnique({
+        where: { id: userId },
       });
+
+      if (existingParent)
+        return res.status(400).json({ message: "Parent not found" });
 
       const entity = await prisma.student.create({
         data: {
@@ -86,7 +62,7 @@ router.post(
           gender,
           dateOfBirth: new Date(dateOfBirth),
           status,
-          user_id: user.id,
+          user_id: userId,
           ...(classIds &&
             classIds.length > 0 && {
               classes: {
@@ -95,22 +71,14 @@ router.post(
                 })),
               },
             }),
-          parents: {
-            create: parentIds.map((parentId: string) => ({
-              parent: { connect: { id: parentId } },
-            })),
-          },
+          parentId: parentId,
         },
         include: {
           user: true,
+          parent: true,
           classes: {
             include: {
               class: true,
-            },
-          },
-          parents: {
-            include: {
-              parent: true,
             },
           },
         },
@@ -119,7 +87,6 @@ router.post(
       const transformed = {
         ...entity,
         classes: entity.classes.map((c) => c.class),
-        parents: entity.parents.map((p) => p.parent),
       };
 
       res.json(transformed);
@@ -160,14 +127,10 @@ router.get(
         orderBy: { createdAt: "desc" },
         include: {
           user: true,
+          parent: true,
           classes: {
             include: {
               class: true,
-            },
-          },
-          parents: {
-            include: {
-              parent: true,
             },
           },
         },
@@ -177,7 +140,6 @@ router.get(
     const transformedData = data.map((student) => ({
       ...student,
       classes: student.classes.map((c) => c.class),
-      parents: student.parents.map((p) => p.parent),
     }));
 
     const metadata = createSearchResponseMetadata(
@@ -207,14 +169,10 @@ router.get(
       where: { id },
       include: {
         user: true,
+        parent: true,
         classes: {
           include: {
             class: true,
-          },
-        },
-        parents: {
-          include: {
-            parent: true,
           },
         },
       },
@@ -226,7 +184,6 @@ router.get(
     const transformed = {
       ...entity,
       classes: entity.classes.map((c) => c.class),
-      parents: entity.parents.map((p) => p.parent),
     };
 
     res.json(transformed);

@@ -2,7 +2,7 @@ import { $Enums } from "@prisma/client";
 import { body } from "express-validator";
 
 export const createParentValidator = [
-  body("name").notEmpty().withMessage("Parent name is required"),
+  body("name").notEmpty().withMessage("Name is required"),
   body("phoneNumber")
     .notEmpty()
     .withMessage("Phone number is required")
@@ -14,14 +14,11 @@ export const createParentValidator = [
     .isIn([
       $Enums.RelationshipToStudent.FATHER,
       $Enums.RelationshipToStudent.MOTHER,
-      $Enums.RelationshipToStudent.SISTER,
-      $Enums.RelationshipToStudent.BROTHER,
-      $Enums.RelationshipToStudent.GRANDFATHER,
-      $Enums.RelationshipToStudent.GRANDMOTHER,
     ])
     .withMessage(
       `Relationship to student must be one of: ${Object.values(
         $Enums.RelationshipToStudent
       ).join(", ")}`
     ),
+  body("address").notEmpty().withMessage("address is required"),
 ];

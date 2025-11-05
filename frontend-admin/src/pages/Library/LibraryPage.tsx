@@ -7,25 +7,73 @@ import {
   Flex,
   Heading,
   Text,
+  useToast,
   VStack,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import type { SearchResponse } from "../../models/base/search.model";
+import type { Library } from "../../models/library.model";
+import { searchHomework } from "../../services/homework.service";
+import { searchLibrary } from "../../services/library.service";
 import { CreateLibraryModal } from "./CreateLibrary";
 
-interface Library {
-  id: string;
-  name: string;
-}
-
 export default function LibraryPage() {
+  const toast = useToast();
+  const [data, setData] = useState<Library[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [metadata, setMetadata] = useState<SearchResponse<Library>["metadata"]>(
+    {
+      total: 0,
+      page: 1,
+      limit: 20,
+      totalPages: 1,
+      hasNextPage: false,
+      hasPrevPage: false,
+    }
+  );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedLibrary, setSelectedLibrary] = useState<string | null>(null);
 
-  const libraries: Library[] = [
-    { id: "1", name: "English Spelling" },
-    { id: "2", name: "Math Homework" },
-    { id: "3", name: "Science Project" },
-  ];
+  const fetchLibraries = async (page: number) => {
+    try {
+      const res = await searchLibrary({ page: page, limit: 10 });
+      setData(res.data);
+      setMetadata(res.metadata);
+    } catch (error) {
+      console.error("Error loading libraries:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchHomeworks = async (libraryId: string) => {
+    try {
+      const res = await searchHomework({
+        page: page,
+        limit: 10,
+        classId: libraryId,
+      });
+    } catch (error) {
+      console.error("Error loading libraries:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLibraries(page);
+  }, [page]);
+
+  const handleNext = () => {
+    if (!metadata.hasNextPage || loading) return; // ✅ ngăn spam click
+    setPage((next) => next + 1);
+  };
+
+  const handlePrev = () => {
+    if (!metadata.hasPrevPage || loading) return;
+    setPage((prev) => prev - 1);
+  };
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
@@ -81,22 +129,22 @@ export default function LibraryPage() {
           {/* LEFT SIDE */}
           <Box w="300px" borderRightWidth="1px" p={4}>
             <VStack align="stretch" spacing={3}>
-              {libraries.map((lib) => (
+              {data.map((item) => (
                 <Card
-                  key={lib.id}
+                  key={item.id}
                   cursor="pointer"
-                  borderWidth={selectedLibrary === lib.id ? "2px" : "1px"}
+                  borderWidth={selectedLibrary === item.id ? "2px" : "1px"}
                   borderColor={
-                    selectedLibrary === lib.id ? "purple.400" : "gray.200"
+                    selectedLibrary === item.id ? "purple.400" : "gray.200"
                   }
-                  bg={selectedLibrary === lib.id ? "purple.50" : "white"}
+                  bg={selectedLibrary === item.id ? "purple.50" : "white"}
                   transition="all 0.2s"
                   _hover={{ borderColor: "purple.300", bg: "gray.50" }}
-                  onClick={() => setSelectedLibrary(lib.id)}
+                  onClick={() => setSelectedLibrary(item.id)}
                 >
                   <CardBody py={2} px={3}>
                     <Text fontWeight="medium" color="gray.800">
-                      {lib.name}
+                      {item.name}
                     </Text>
                   </CardBody>
                 </Card>
@@ -110,7 +158,7 @@ export default function LibraryPage() {
               <>
                 <Text fontWeight="bold" fontSize="xl" mb={4} color="purple.600">
                   📝 Homework for{" "}
-                  {libraries.find((l) => l.id === selectedLibrary)?.name}
+                  {data.find((l) => l.id === selectedLibrary)?.name}
                 </Text>
                 <VStack align="stretch" spacing={3}>
                   {/* {homeworks[selectedLibrary]?.map((hw, i) => (

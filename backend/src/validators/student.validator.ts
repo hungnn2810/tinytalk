@@ -32,42 +32,9 @@ export const createStudentValidator = [
   body("classIds")
     .optional({ nullable: true })
     .isArray()
-    .withMessage("classIds must be an array"),
+    .withMessage("Class ids must be an array"),
 
-  body("username")
-    .notEmpty()
-    .withMessage("Username is required")
-    .matches(/^(0|\+84)(3|5|7|8|9)[0-9]{8}$/)
-    .withMessage("Username must be a valid Vietnamese phone number"),
+  body("userId").notEmpty().withMessage("User id is required"),
 
-  body("password")
-    .notEmpty()
-    .withMessage("Password is required")
-    .isLength({ min: 6 })
-    .withMessage("Password must have at least 6 characters"),
-
-  body("parents").custom((parents) => {
-    if (!Array.isArray(parents)) throw new Error("Parents must be an array");
-
-    if (parents.length > 1) {
-      for (const p of parents) {
-        if (!p.name) throw new Error("Parent name is required");
-        if (!p.phoneNumber) throw new Error("Parent phone number is required");
-        if (!p.relationshipToStudent)
-          throw new Error("Relationship to student is required");
-        if (
-          p.relationshipToStudent &&
-          !Object.values($Enums.RelationshipToStudent).includes(
-            p.relationshipToStudent
-          )
-        )
-          throw new Error(
-            `Relationship to student must be one of: ${Object.values(
-              $Enums.RelationshipToStudent
-            ).join(", ")}`
-          );
-      }
-    }
-    return true;
-  }),
+  body("parentIds").isArray().withMessage("Parent ids must be an array"),
 ];

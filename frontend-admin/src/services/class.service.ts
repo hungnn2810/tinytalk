@@ -1,4 +1,4 @@
-import { ApiMethod } from "../enums/apiMethod";
+import { ApiMethod } from "../enums/ApiMethod";
 import type { SearchParams, SearchResponse } from "../models/base/search.model";
 import type { Class } from "../models/class.model";
 import { apiRequest } from "../utils/api.util";

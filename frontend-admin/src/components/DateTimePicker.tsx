@@ -116,6 +116,7 @@ export function DateTimePicker<T>({
         timeIntervals={15}
         dateFormat={dateOnly ? "dd/MM/yyyy" : "dd/MM/yyyy HH:mm"}
         placeholderText={dateOnly ? "Select date" : "Select date & time"}
+        portalId="1"
         customInput={
           <Input
             focusBorderColor="purple.500"

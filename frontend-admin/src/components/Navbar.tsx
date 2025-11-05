@@ -26,6 +26,7 @@ import {
 import { NavLink } from "react-router-dom";
 import logo from "../assets/logo.png";
 import { CreateClassModal } from "../pages/Classes/CreateClassModal";
+import { CreateStudentModal } from "../pages/Students/CreateStudentModal";
 
 const navItems = [
   { label: "Home", path: "/", icon: FaHome },
@@ -36,6 +37,8 @@ const navItems = [
 
 export const Navbar = () => {
   const [isModalCreateClassOpen, setIsModalCreateClassOpen] = useState(false);
+  const [isModelCreateStudentOpen, setIsModalCreateStudentOpen] =
+    useState(false);
 
   const menuItems = [
     {
@@ -43,13 +46,19 @@ export const Navbar = () => {
       icon: FaChalkboardTeacher,
       onClick: () => {
         setIsModalCreateClassOpen(true);
-        console.log(isModalCreateClassOpen);
       },
     },
-    { label: "Student", icon: FaUserGraduate },
+    {
+      label: "Student",
+      icon: FaUserGraduate,
+      onClick: () => {
+        setIsModalCreateStudentOpen(true);
+      },
+    },
     { label: "Library", icon: FaBook },
     { label: "Homework", icon: FaFile },
   ];
+
   return (
     <Box
       bg="white"
@@ -183,15 +192,7 @@ export const Navbar = () => {
             >
               New
             </MenuButton>
-            <MenuList
-              boxShadow="xl"
-              borderRadius="xl"
-              py={2}
-              border="1px"
-              borderColor="gray.100"
-              minW="200px"
-              mt={2}
-            >
+            <MenuList boxShadow="2xl" borderColor="gray.100">
               {menuItems.map(({ label, icon: IconComponent, onClick }) => (
                 <MenuItem
                   key={label}
@@ -199,8 +200,6 @@ export const Navbar = () => {
                     <Icon as={IconComponent} color="purple.500" boxSize={4} />
                   }
                   onClick={onClick}
-                  borderRadius="md"
-                  mx={2}
                   fontSize="sm"
                   fontWeight="500"
                   _hover={{
@@ -216,6 +215,11 @@ export const Navbar = () => {
             <CreateClassModal
               isOpen={isModalCreateClassOpen}
               onClose={() => setIsModalCreateClassOpen(false)}
+              onSuccess={() => {}}
+            />
+            <CreateStudentModal
+              isOpen={isModelCreateStudentOpen}
+              onClose={() => setIsModalCreateStudentOpen(false)}
               onSuccess={() => {}}
             />
           </Menu>

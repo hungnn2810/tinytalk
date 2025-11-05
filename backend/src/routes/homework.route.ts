@@ -1,49 +1,20 @@
 import { Role } from "@prisma/client";
-import express, { NextFunction, Request, Response } from "express";
+import express from "express";
 import { authenticate, authorize } from "../middlewares/auth";
-import { validateRequest } from "../middlewares/validateRequest";
 import {
   createSearchResponseMetadata,
   SearchResponse,
 } from "../models/pagination";
 import { prisma } from "../prisma/prisma";
 import { parseQuery } from "../utils/parseQuery";
-import { libraryCreateValidator } from "../validators/library.validator";
 
 const router = express.Router();
 
-interface LibraryQuery {
+interface HomeworkQuery {
   page: number;
   limit: number;
+  classId?: string;
 }
-
-// Create
-router.post(
-  "/",
-  authenticate,
-  authorize(Role.ADMIN, Role.TEACHER),
-  libraryCreateValidator,
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      validateRequest(req);
-      const { name } = req.body;
-
-      const existing = await prisma.library.findFirst({
-        where: { name },
-      });
-
-      if (existing) return res.status(400).json({ message: "Library exists" });
-
-      const newEntity = await prisma.library.create({
-        data: { name },
-      });
-
-      return res.status(201).json(newEntity);
-    } catch (err) {
-      next(err);
-    }
-  }
-);
 
 // Search
 router.get(
@@ -51,7 +22,7 @@ router.get(
   authenticate,
   authorize(Role.ADMIN, Role.TEACHER),
   async (req, res) => {
-    const { page, limit } = parseQuery<LibraryQuery>(req.query, {
+    const { page, limit, classId } = parseQuery<HomeworkQuery>(req.query, {
       page: 1,
       limit: 10,
     });
@@ -59,9 +30,11 @@ router.get(
     const skip = (Number(page) - 1) * Number(limit);
     const where: any = {};
 
+    if (classId) where.classId = classId;
+
     const [total, data] = await Promise.all([
-      prisma.library.count({ where }),
-      prisma.library.findMany({
+      prisma.homework.count({ where }),
+      prisma.homework.findMany({
         where,
         skip,
         take: Number(limit),

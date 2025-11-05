@@ -21,7 +21,7 @@ router.post(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       validateRequest(req);
-      const { name, phoneNumber, relationshipToStudent } = req.body;
+      const { name, phoneNumber, relationshipToStudent, address } = req.body;
 
       const existing = await prisma.parent.findFirst({
         where: { name, phoneNumber },
@@ -30,7 +30,7 @@ router.post(
       if (existing) return res.status(400).json({ message: "Parent exists" });
 
       const newEntity = await prisma.parent.create({
-        data: { name, phoneNumber, relationshipToStudent },
+        data: { name, phoneNumber, relationshipToStudent, address },
       });
 
       return res.status(201).json(newEntity);

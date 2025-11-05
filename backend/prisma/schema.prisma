@@ -15,7 +15,8 @@ model User {
   role      Role
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  student   Student?
+
+  students Student[]
 }
 
 enum Role {
@@ -32,10 +33,6 @@ enum Gender {
 enum RelationshipToStudent {
   FATHER
   MOTHER
-  SISTER
-  BROTHER
-  GRANDFATHER
-  GRANDMOTHER
 }
 
 enum DayOfWeek {
@@ -83,6 +80,7 @@ model Student {
   id          String        @id @default(uuid())
   user_id     String        @unique
   class_id    String?       @unique
+  parentId    String
   name        String        @unique
   gender      Gender
   dateOfBirth DateTime
@@ -90,9 +88,9 @@ model Student {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @default(now())
 
-  user    User               @relation(fields: [user_id], references: [id])
+  user    User              @relation(fields: [user_id], references: [id])
+  parent  Parent            @relation(fields: [parentId], references: [id])
   classes StudentClassMap[]
-  parents StudentParentMap[]
 }
 
 model StudentClassMap {
@@ -108,19 +106,12 @@ model Parent {
   id                    String                @id @default(uuid())
   name                  String
   phoneNumber           String
+  address               String
   relationshipToStudent RelationshipToStudent
   createdAt             DateTime              @default(now())
   updatedAt             DateTime              @default(now())
-  students              StudentParentMap[]
-}
 
-model StudentParentMap {
-  studentId String
-  parentId  String
-  student   Student @relation(fields: [studentId], references: [id])
-  parent    Parent  @relation(fields: [parentId], references: [id])
-
-  @@id([studentId, parentId])
+  students Student[]
 }
 
 model Library {
