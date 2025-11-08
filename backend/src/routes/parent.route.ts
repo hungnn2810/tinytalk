@@ -43,8 +43,7 @@ router.post(
 interface ParentQuery {
   page: number;
   limit: number;
-  name?: string;
-  phoneNumber?: string;
+  keyword?: string;
 }
 
 // Search
@@ -53,19 +52,16 @@ router.get(
   authenticate,
   authorize(Role.ADMIN, Role.TEACHER),
   async (req, res) => {
-    const { page, limit, name, phoneNumber } = parseQuery<ParentQuery>(
-      req.query,
-      {
-        page: 1,
-        limit: 10,
-      }
-    );
+    const { page, limit, keyword } = parseQuery<ParentQuery>(req.query, {
+      page: 1,
+      limit: 10,
+    });
     const skip = (Number(page) - 1) * Number(limit);
     const where: any = {};
 
-    if (name) where.name = { contains: name, mode: "insensitive" };
-    if (phoneNumber)
-      where.phoneNumber = { contains: phoneNumber, mode: "insensitive" };
+    if (keyword) {
+      where.OR = [{ name: { contains: keyword, mode: "insensitive" } }];
+    }
 
     const [total, data] = await Promise.all([
       prisma.parent.count({ where }),

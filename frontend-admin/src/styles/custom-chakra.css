@@ -11,7 +11,6 @@
 
 .chakra-modal__content {
   border-radius: 16px !important;
-  overflow: hidden;
   animation: modalFadeIn 0.3s ease-out;
 }
 
@@ -19,11 +18,13 @@
   font-size: 1.5rem;
   font-weight: 700;
   position: relative;
+  overflow: hidden;
+  border-radius: 16px 16px 0 0;
 }
-
 
 .chakra-modal__body {
   background: linear-gradient(to bottom, #ffffff 0%, #fefeff 100%);
+  overflow: visible !important;
 }
 
 .chakra-modal__body input {

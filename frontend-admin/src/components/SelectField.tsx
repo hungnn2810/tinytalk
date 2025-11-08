@@ -211,7 +211,7 @@ export const SelectField = (props: ISelectFieldProps) => {
             boxShadow="lg"
             maxH="200px"
             overflowY="auto"
-            zIndex={10}
+            zIndex={9999}
             onScroll={handleScroll}
           >
             {filteredOptions.map((opt) => {

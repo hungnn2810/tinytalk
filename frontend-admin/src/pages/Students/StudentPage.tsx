@@ -135,7 +135,7 @@ export default function StudentPage() {
   return (
     <Box pt={8}>
       <Flex justifyContent="space-between" alignItems="center">
-        <Heading size="lg">My Students</Heading>
+        <Heading size="md">Students</Heading>
         <Button
           bgGradient="linear(to-r, purple.500, purple.600)"
           color="white"

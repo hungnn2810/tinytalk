@@ -14,8 +14,8 @@ export const createStudentValidator = [
   body("dateOfBirth")
     .notEmpty()
     .withMessage("Date of birth is required")
-    .isDate({ format: "YYYY-MM-DD" })
-    .withMessage("Date of birth must be in format YYYY-MM-DD"),
+    .isISO8601()
+    .withMessage("Start time must be a valid ISO 8601 date"),
 
   body("status")
     .notEmpty()
@@ -33,8 +33,4 @@ export const createStudentValidator = [
     .optional({ nullable: true })
     .isArray()
     .withMessage("Class ids must be an array"),
-
-  body("userId").notEmpty().withMessage("User id is required"),
-
-  body("parentIds").isArray().withMessage("Parent ids must be an array"),
 ];

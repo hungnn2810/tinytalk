@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   Divider,
   HStack,
@@ -15,20 +16,56 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { Formik, FormikProvider } from "formik";
-import { useState } from "react";
-import { FiCheck } from "react-icons/fi";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  FiBookOpen,
+  FiCheck,
+  FiChevronDown,
+  FiChevronUp,
+  FiUser,
+  FiUserPlus,
+} from "react-icons/fi";
 import * as Yup from "yup";
 import { CustomToast } from "../../components/CustomToast";
 import { DateTimePicker } from "../../components/DateTimePicker";
 import { InputField } from "../../components/InputField";
 import { SelectField } from "../../components/SelectField";
-import { Gender } from "../../enums/gender";
-import { StudentStatus } from "../../enums/StudentStatus";
+import { Gender, GenderLabels } from "../../enums/Gender";
+import {
+  RelationshipToStudent,
+  RelationshipToStudentLabels,
+} from "../../enums/RelationshipToStudent";
+import { StudentStatus, StudentStatusLabels } from "../../enums/StudentStatus";
 import type { ApiError } from "../../models/base/error.model";
+import type { SearchResponse } from "../../models/base/search.model";
+import type { Class } from "../../models/class.model";
+import type { Parent } from "../../models/parent.model";
+import { searchClass } from "../../services/class.service";
+import { searchParent } from "../../services/parent.service";
 import {
   createStudent,
   type CreateStudentRequest,
 } from "../../services/student.service";
+
+const CLASS_LIMIT = 10;
+
+const initialClassMetadata: SearchResponse<Class>["metadata"] = {
+  total: 0,
+  page: 1,
+  limit: CLASS_LIMIT,
+  totalPages: 1,
+  hasNextPage: false,
+  hasPrevPage: false,
+};
+
+const initialParentMetadata: SearchResponse<Parent>["metadata"] = {
+  total: 0,
+  page: 1,
+  limit: CLASS_LIMIT,
+  totalPages: 1,
+  hasNextPage: false,
+  hasPrevPage: false,
+};
 
 const CreateStudentSchema = Yup.object().shape({
   name: Yup.string().required("Student name is required"),
@@ -40,6 +77,25 @@ const CreateStudentSchema = Yup.object().shape({
   status: Yup.mixed()
     .oneOf(Object.values(StudentStatus))
     .required("Status is required"),
+  parentId: Yup.string().when("parent", {
+    is: (parent: { name?: string }) => !parent?.name,
+    then: (schema) =>
+      schema.required("Please select a parent or create new one"),
+    otherwise: (schema) => schema.notRequired(),
+  }),
+  parent: Yup.object()
+    .shape({
+      name: Yup.string(),
+      phoneNumber: Yup.string().matches(
+        /^(0|\+84)(3|5|7|8|9)[0-9]{8}$/,
+        "Invalid Vietnamese phone number"
+      ),
+      relationshipToStudent: Yup.string().oneOf(
+        Object.keys(RelationshipToStudent)
+      ),
+      address: Yup.string(),
+    })
+    .notRequired(),
 });
 
 interface CreateStudentModalProps {
@@ -54,7 +110,16 @@ export const CreateStudentModal = ({
   onSuccess,
 }: CreateStudentModalProps) => {
   const toast = useToast();
-  const [formValues] = useState<CreateStudentRequest>({
+  const [formValues] = useState<
+    CreateStudentRequest & {
+      parent?: {
+        name: string;
+        phoneNumber: string;
+        relationshipToStudent: string;
+        address: string;
+      };
+    }
+  >({
     name: "",
     gender: Gender.FEMALE,
     dateOfBirth: new Date(),
@@ -62,13 +127,120 @@ export const CreateStudentModal = ({
     classIds: [],
     parentId: "",
     userId: "",
+    parent: {
+      name: "",
+      phoneNumber: "",
+      relationshipToStudent: RelationshipToStudent.MOTHER,
+      address: "",
+    },
   });
+  const [classKeyword, setClassKeyword] = useState("");
+  const [classMetadata, setClassMetadata] = useState(initialClassMetadata);
+  const [classPage, setClassPage] = useState(1);
+  const [classes, setClasses] = useState<Class[]>([]);
+  const isFetchingClass = useRef(false);
+  const [parentKeyword, setParentKeyword] = useState("");
+  const [parentMetadata, setParentMetadata] = useState(initialParentMetadata);
+  const [parentPage, setParentPage] = useState(1);
+  const [parents, setParents] = useState<Parent[]>([]);
+  const isFetchingParent = useRef(false);
+
+  const [showParentForm, setShowParentForm] = useState(false);
+
+  const fetchClasses = useCallback(async (keyword: string, page: number) => {
+    if (isFetchingClass.current) return;
+    isFetchingClass.current = true;
+
+    try {
+      const res = await searchClass({ page, limit: CLASS_LIMIT, keyword });
+
+      setClasses((prev) => (page === 1 ? res.data : [...prev, ...res.data]));
+      setClassMetadata(res.metadata);
+      setClassPage(res.metadata.page);
+    } catch (error) {
+      console.error("Error loading classes:", error);
+    } finally {
+      isFetchingClass.current = false;
+    }
+  }, []);
+
+  const fetchParents = useCallback(async (keyword: string, page: number) => {
+    if (isFetchingParent.current) return;
+    isFetchingParent.current = true;
+
+    try {
+      const res = await searchParent({ page, limit: CLASS_LIMIT, keyword });
+      setParents((prev) => (page === 1 ? res.data : [...prev, ...res.data]));
+      setParentMetadata(res.metadata);
+      setParentPage(res.metadata.page);
+    } catch (error) {
+      console.error("Error loading parents:", error);
+    } finally {
+      isFetchingClass.current = false;
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchClasses(classKeyword, 1);
+    fetchParents(parentKeyword, 1);
+  }, [classKeyword, fetchClasses, parentKeyword, fetchParents]);
+
+  const handleClassNext = useCallback(() => {
+    if (!classMetadata.hasNextPage || isFetchingClass.current) return;
+    fetchClasses(classKeyword, classPage + 1);
+  }, [classMetadata.hasNextPage, classKeyword, classPage, fetchClasses]);
+
+  const handleParentNext = useCallback(() => {
+    if (!parentMetadata.hasNextPage || isFetchingClass.current) return;
+    fetchParents(parentKeyword, parentPage + 1);
+  }, [parentMetadata.hasNextPage, parentKeyword, parentPage, fetchParents]);
+
+  const handleClassSearch = useCallback(
+    (keyword: string) => {
+      setClassKeyword(keyword);
+      setClassPage(1);
+      fetchClasses(keyword, 1);
+    },
+    [fetchClasses]
+  );
+
+  const handleParentSearch = useCallback(
+    (keyword: string) => {
+      setParentKeyword(keyword);
+      setParentPage(1);
+      fetchParents(keyword, 1);
+    },
+    [fetchParents]
+  );
+
+  // Memoize class options
+  const classOptions = useMemo(
+    () =>
+      classes.map((cls) => (
+        <option key={cls.id} value={cls.id}>
+          {cls.name}
+        </option>
+      )),
+    [classes]
+  );
+
+  const parentOptions = useMemo(
+    () =>
+      parents.map((prt) => (
+        <option key={prt.id} value={prt.id}>
+          {prt.name}
+        </option>
+      )),
+    [parents]
+  );
 
   const handleCreate = async (
     values: CreateStudentRequest,
     resetForm: () => void
   ) => {
     try {
+      console.log("Form values:", values); // Debug
+
       const payload: CreateStudentRequest = {
         ...values,
       };
@@ -132,7 +304,7 @@ export const CreateStudentModal = ({
             onClose={onClose}
             isCentered
             motionPreset="slideInBottom"
-            size="lg"
+            size="2xl"
           >
             <ModalOverlay bg="blackAlpha.400" backdropFilter="blur(4px)" />
             <ModalContent borderRadius="full" boxShadow="2xl">
@@ -146,7 +318,7 @@ export const CreateStudentModal = ({
                 display="flex"
                 alignItems="center"
               >
-                <Text>New library</Text>
+                <Text>New student</Text>
               </ModalHeader>
               <ModalCloseButton color="white" size="lg" top={5} right={5} />
 
@@ -154,60 +326,201 @@ export const CreateStudentModal = ({
 
               <ModalBody px={8} py={8}>
                 <form onSubmit={formik.handleSubmit}>
-                  <Stack spacing={6}>
-                    <InputField
-                      name="name"
-                      label="Name"
-                      placeholder="e.g., Katie Smith"
-                    />
-                  </Stack>
+                  <Stack spacing={8}>
+                    <Box>
+                      <HStack spacing={2} mb={4}>
+                        <Icon as={FiUser} color="purple.500" boxSize={5} />
+                        <Text fontSize="lg" fontWeight="600" color="gray.700">
+                          Personal Information
+                        </Text>
+                      </HStack>
+                      <Stack spacing={5}>
+                        <InputField
+                          name="name"
+                          label="Full Name"
+                          placeholder="Enter student name"
+                        />
 
-                  <Stack spacing={6}>
-                    <HStack
-                      display="grid"
-                      align="stretch"
-                      gridTemplateColumns="1fr 1fr"
-                      gap={4}
-                    >
-                      <DateTimePicker<CreateStudentRequest>
-                        name="dateOfBirth"
-                        label="Date Of Birth"
-                        dateOnly
-                      />
+                        <HStack spacing={4} align="flex-start">
+                          <Box flex={1}>
+                            <DateTimePicker<CreateStudentRequest>
+                              name="dateOfBirth"
+                              label="Date of Birth"
+                              dateOnly
+                            />
+                          </Box>
+                          <Box flex={1}>
+                            <SelectField name="gender" label="Gender">
+                              {Object.entries(Gender).map(([key, value]) => (
+                                <option key={key} value={value}>
+                                  {GenderLabels[value]}
+                                </option>
+                              ))}
+                            </SelectField>
+                          </Box>
+                        </HStack>
+                      </Stack>
+                    </Box>
 
-                      <SelectField name="gender" label="Gender">
-                        {Object.values(Gender).map((cls) => (
-                          <option key={cls} value={cls}>
-                            {cls}
-                          </option>
-                        ))}
-                      </SelectField>
-                    </HStack>
-                  </Stack>
+                    <Box>
+                      <HStack spacing={2} mb={4}>
+                        <Icon as={FiBookOpen} color="purple.500" boxSize={5} />
+                        <Text fontSize="lg" fontWeight="600" color="gray.700">
+                          Academic Information
+                        </Text>
+                      </HStack>
+                      <Stack spacing={5}>
+                        <HStack spacing={4} align="flex-start">
+                          <Box flex={1}>
+                            <SelectField name="status" label="Status">
+                              {Object.entries(StudentStatus).map(
+                                ([key, value]) => (
+                                  <option key={key} value={value}>
+                                    {StudentStatusLabels[value]}
+                                  </option>
+                                )
+                              )}
+                            </SelectField>
+                          </Box>
+                          <Box flex={1}>
+                            <SelectField
+                              name="classIds"
+                              label="Classes"
+                              placeholder="Search and select classes"
+                              isMulti
+                              isFetching={isFetchingClass}
+                              hasNextPage={classMetadata.hasNextPage}
+                              handleNext={handleClassNext}
+                              onSearch={handleClassSearch}
+                            >
+                              {classOptions}
+                            </SelectField>
+                          </Box>
+                        </HStack>
+                      </Stack>
+                    </Box>
 
-                  <Stack spacing={6}>
-                    <HStack
-                      display="grid"
-                      align="stretch"
-                      gridTemplateColumns="1fr 1fr"
-                      gap={4}
-                    >
-                      <SelectField name="status" label="Status">
-                        {Object.values(StudentStatus).map((cls) => (
-                          <option key={cls} value={cls}>
-                            {cls}
-                          </option>
-                        ))}
-                      </SelectField>
+                    {/* Parent Information Section */}
+                    <Box>
+                      <HStack spacing={2} mb={4}>
+                        <Icon as={FiUserPlus} color="purple.500" boxSize={5} />
+                        <Text fontSize="lg" fontWeight="600" color="gray.700">
+                          Parent Information
+                        </Text>
+                      </HStack>
+                      <Stack spacing={4}>
+                        {!showParentForm ? (
+                          <>
+                            <SelectField
+                              name="parentId"
+                              label="Select Existing Parent"
+                              placeholder="Search for parent"
+                              isFetching={isFetchingParent}
+                              hasNextPage={parentMetadata.hasNextPage}
+                              handleNext={handleParentNext}
+                              onSearch={handleParentSearch}
+                            >
+                              {parentOptions}
+                            </SelectField>
 
-                      <SelectField name="classIds" label="Class" isMulti>
-                        {/* {classes.map((cls) => (
-                          <option key={cls.id} value={cls.id}>
-                            {cls.name}
-                          </option>
-                        ))} */}
-                      </SelectField>
-                    </HStack>
+                            <HStack justify="center">
+                              <Divider flex={1} />
+                              <Text
+                                fontSize="sm"
+                                color="gray.500"
+                                fontWeight="500"
+                              >
+                                OR
+                              </Text>
+                              <Divider flex={1} />
+                            </HStack>
+
+                            <Button
+                              leftIcon={<Icon as={FiUserPlus} />}
+                              rightIcon={<Icon as={FiChevronDown} />}
+                              variant="outline"
+                              colorScheme="purple"
+                              size="md"
+                              w="full"
+                              onClick={() => setShowParentForm(true)}
+                              _hover={{
+                                bg: "purple.50",
+                                borderColor: "purple.500",
+                              }}
+                            >
+                              Create New Parent
+                            </Button>
+                          </>
+                        ) : (
+                          <>
+                            <HStack justify="space-between" align="center">
+                              <Text
+                                fontSize="md"
+                                fontWeight="600"
+                                color="purple.600"
+                              >
+                                New Parent
+                              </Text>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                colorScheme="gray"
+                                rightIcon={<Icon as={FiChevronUp} />}
+                                onClick={() => setShowParentForm(false)}
+                              >
+                                Use Existing
+                              </Button>
+                            </HStack>
+
+                            <Box
+                              p={5}
+                              bg="purple.50"
+                              borderRadius="lg"
+                              border="1px solid"
+                              borderColor="purple.100"
+                            >
+                              <Stack spacing={4}>
+                                <InputField
+                                  name="parent.name"
+                                  label="Parent Name"
+                                  placeholder="Enter parent full name"
+                                />
+
+                                <HStack spacing={4} align="flex-start">
+                                  <Box flex={1}>
+                                    <InputField
+                                      name="parent.phoneNumber"
+                                      label="Phone Number"
+                                      placeholder="Enter phone number"
+                                    />
+                                  </Box>
+                                  <Box flex={1}>
+                                    <SelectField
+                                      name="parent.relationshipToStudent"
+                                      label="Relationship"
+                                    >
+                                      {Object.entries(
+                                        RelationshipToStudent
+                                      ).map(([key, value]) => (
+                                        <option key={key} value={value}>
+                                          {RelationshipToStudentLabels[value]}
+                                        </option>
+                                      ))}
+                                    </SelectField>
+                                  </Box>
+                                </HStack>
+
+                                <InputField
+                                  name="parent.address"
+                                  label="Address"
+                                  placeholder="Enter home address"
+                                />
+                              </Stack>
+                            </Box>
+                          </>
+                        )}
+                      </Stack>
+                    </Box>
                   </Stack>
                 </form>
               </ModalBody>
@@ -224,9 +537,7 @@ export const CreateStudentModal = ({
                     Cancel
                   </Button>
                   <Button
-                    type="submit"
-                    // onClick={formik.submitForm}
-                    onClick={() => console.log(formValues)}
+                    onClick={() => formik.handleSubmit()}
                     isLoading={formik.isSubmitting}
                     loadingText="Creating..."
                     leftIcon={<Icon as={FiCheck} />}

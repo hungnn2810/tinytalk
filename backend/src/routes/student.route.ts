@@ -21,7 +21,7 @@ router.post(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       validateRequest(req);
-      const { name, gender, dateOfBirth, status, classIds, parentId, userId } =
+      const { name, gender, dateOfBirth, status, classIds, parentId } =
         req.body;
 
       const existing = await prisma.student.findFirst({
@@ -29,13 +29,6 @@ router.post(
       });
 
       if (existing) return res.status(400).json({ message: "Student exists" });
-
-      const existingUser = await prisma.user.findUnique({
-        where: { id: userId },
-      });
-
-      if (existingUser)
-        return res.status(400).json({ message: "User not found" });
 
       if (classIds && classIds.length > 0) {
         const classes = await prisma.class.findMany({
@@ -50,7 +43,7 @@ router.post(
       }
 
       const existingParent = await prisma.user.findUnique({
-        where: { id: userId },
+        where: { id: parentId },
       });
 
       if (existingParent)
@@ -62,7 +55,6 @@ router.post(
           gender,
           dateOfBirth: new Date(dateOfBirth),
           status,
-          user_id: userId,
           ...(classIds &&
             classIds.length > 0 && {
               classes: {
@@ -74,7 +66,6 @@ router.post(
           parentId: parentId,
         },
         include: {
-          user: true,
           parent: true,
           classes: {
             include: {
@@ -126,7 +117,6 @@ router.get(
         take: Number(limit),
         orderBy: { createdAt: "desc" },
         include: {
-          user: true,
           parent: true,
           classes: {
             include: {
@@ -168,7 +158,6 @@ router.get(
     const entity = await prisma.student.findUnique({
       where: { id },
       include: {
-        user: true,
         parent: true,
         classes: {
           include: {

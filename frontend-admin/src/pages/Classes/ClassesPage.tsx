@@ -29,19 +29,22 @@ import { deleteClass, searchClass } from "../../services/class.service";
 import { parseToZonedDate } from "../../utils/datetime.util";
 import { CreateClassModal } from "./CreateClassModal";
 
+const CLASS_LIMIT = 20;
+const initialMetadata: SearchResponse<Class>["metadata"] = {
+  total: 0,
+  page: 1,
+  limit: CLASS_LIMIT,
+  totalPages: 1,
+  hasNextPage: false,
+  hasPrevPage: false,
+};
+
 export default function ClassesPage() {
   const toast = useToast();
   const [data, setData] = useState<Class[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
-  const [metadata, setMetadata] = useState<SearchResponse<Class>["metadata"]>({
-    total: 0,
-    page: 1,
-    limit: 20,
-    totalPages: 1,
-    hasNextPage: false,
-    hasPrevPage: false,
-  });
+  const [metadata, setMetadata] = useState(initialMetadata);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);

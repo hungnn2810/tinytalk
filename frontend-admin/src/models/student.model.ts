@@ -1,5 +1,6 @@
-import type { Gender } from "../enums/gender";
+import type { Gender } from "../enums/Gender";
 import type { Class } from "./class.model";
+import type { Parent } from "./parent.model";
 
 export interface Student {
   id: string;
@@ -7,4 +8,5 @@ export interface Student {
   gender: Gender;
   dateOfBirth: Date;
   classes: Class[];
+  parent: Parent;
 }
