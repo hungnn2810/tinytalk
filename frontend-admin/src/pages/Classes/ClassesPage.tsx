@@ -21,12 +21,12 @@ import {
 import { useEffect, useState } from "react";
 import { FiClock, FiMoreVertical, FiUser } from "react-icons/fi";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
+import { CustomToast } from "../../components/CustomToast";
 import Pagination from "../../components/Pagination";
 import type { SearchResponse } from "../../models/base/search.model";
 import type { Class } from "../../models/class.model";
 import { deleteClass, searchClass } from "../../services/class.service";
 import { parseToZonedDate } from "../../utils/datetime.util";
-import { CustomToast } from "../../utils/toast.util";
 import { CreateClassModal } from "./CreateClassModal";
 
 export default function ClassesPage() {

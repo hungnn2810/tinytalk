@@ -4,8 +4,7 @@ import type { Class } from "../models/class.model";
 import { apiRequest } from "../utils/api.util";
 
 export interface SearchClassRequest extends SearchParams {
-  name?: string;
-  code?: string;
+  keyword?: string;
 }
 
 export interface CreateClassRequest {

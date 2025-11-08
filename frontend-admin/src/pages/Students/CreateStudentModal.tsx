@@ -18,17 +18,17 @@ import { Formik, FormikProvider } from "formik";
 import { useState } from "react";
 import { FiCheck } from "react-icons/fi";
 import * as Yup from "yup";
+import { CustomToast } from "../../components/CustomToast";
 import { DateTimePicker } from "../../components/DateTimePicker";
 import { InputField } from "../../components/InputField";
 import { SelectField } from "../../components/SelectField";
-import { Gender } from "../../enums/Gender";
+import { Gender } from "../../enums/gender";
 import { StudentStatus } from "../../enums/StudentStatus";
 import type { ApiError } from "../../models/base/error.model";
 import {
   createStudent,
   type CreateStudentRequest,
 } from "../../services/student.service";
-import { CustomToast } from "../../utils/toast.util";
 
 const CreateStudentSchema = Yup.object().shape({
   name: Yup.string().required("Student name is required"),
@@ -189,7 +189,7 @@ export const CreateStudentModal = ({
                     <HStack
                       display="grid"
                       align="stretch"
-                      gridTemplateColumns="1fr 2fr"
+                      gridTemplateColumns="1fr 1fr"
                       gap={4}
                     >
                       <SelectField name="status" label="Status">
@@ -200,12 +200,12 @@ export const CreateStudentModal = ({
                         ))}
                       </SelectField>
 
-                      <SelectField name="gender" label="Gender">
-                        {Object.values(Gender).map((cls) => (
-                          <option key={cls} value={cls}>
-                            {cls}
+                      <SelectField name="classIds" label="Class" isMulti>
+                        {/* {classes.map((cls) => (
+                          <option key={cls.id} value={cls.id}>
+                            {cls.name}
                           </option>
-                        ))}
+                        ))} */}
                       </SelectField>
                     </HStack>
                   </Stack>
@@ -225,7 +225,8 @@ export const CreateStudentModal = ({
                   </Button>
                   <Button
                     type="submit"
-                    onClick={formik.submitForm}
+                    // onClick={formik.submitForm}
+                    onClick={() => console.log(formValues)}
                     isLoading={formik.isSubmitting}
                     loadingText="Creating..."
                     leftIcon={<Icon as={FiCheck} />}

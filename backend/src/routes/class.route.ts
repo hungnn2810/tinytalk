@@ -46,8 +46,7 @@ router.post(
 interface ClassQuery {
   page: number;
   limit: number;
-  name?: string;
-  code?: string;
+  keyword?: string;
 }
 
 // Search
@@ -56,7 +55,7 @@ router.get(
   authenticate,
   authorize(Role.ADMIN, Role.TEACHER),
   async (req, res) => {
-    const { page, limit, name, code } = parseQuery<ClassQuery>(req.query, {
+    const { page, limit, keyword } = parseQuery<ClassQuery>(req.query, {
       page: 1,
       limit: 10,
     });
@@ -64,8 +63,12 @@ router.get(
     const skip = (Number(page) - 1) * Number(limit);
     const where: any = {};
 
-    if (name) where.name = { contains: name, mode: "insensitive" };
-    if (code) where.code = { contains: code, mode: "insensitive" };
+    if (keyword) {
+      where.OR = [
+        { name: { contains: keyword, mode: "insensitive" } },
+        { code: { contains: keyword, mode: "insensitive" } },
+      ];
+    }
 
     const [total, data] = await Promise.all([
       prisma.class.count({ where }),

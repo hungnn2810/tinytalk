@@ -1,4 +1,4 @@
-import type { Gender } from "../enums/Gender";
+import type { Gender } from "../enums/gender";
 import type { Class } from "./class.model";
 
 export interface Student {

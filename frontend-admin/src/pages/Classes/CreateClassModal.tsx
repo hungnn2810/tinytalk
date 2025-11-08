@@ -19,6 +19,7 @@ import { useState } from "react";
 import { FiCheck } from "react-icons/fi";
 import * as Yup from "yup";
 import { ColorPicker } from "../../components/ColorPicker";
+import { CustomToast } from "../../components/CustomToast";
 import { DateTimePicker } from "../../components/DateTimePicker";
 import { InputField } from "../../components/InputField";
 import { COLOR_CODE } from "../../constants/colorCode";
@@ -27,7 +28,6 @@ import {
   createClass,
   type CreateClassRequest,
 } from "../../services/class.service";
-import { CustomToast } from "../../utils/toast.util";
 
 const CreateClassSchema = Yup.object().shape({
   name: Yup.string().required("Class name is required"),
