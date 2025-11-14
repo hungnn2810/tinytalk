@@ -1,11 +1,6 @@
 import { format, parse } from "date-fns";
-import * as tz from "date-fns-tz";
 
-export function parseToZonedDate(
-  date: string | Date,
-  formatStr: string,
-  timeZone: string = "Asia/Bangkok"
-): string {
+export function formatDate(date: string | Date, formatStr: string): string {
   let parsedDate: Date;
 
   if (typeof date === "string") {
@@ -14,11 +9,5 @@ export function parseToZonedDate(
     parsedDate = date;
   }
 
-  const zonedDate = tz.toZonedTime(parsedDate, timeZone);
-
-  if (isNaN(zonedDate.getTime())) {
-    return "Invalid date"; // hiển thị an toàn
-  }
-
-  return format(zonedDate, formatStr);
+  return format(parsedDate, formatStr);
 }

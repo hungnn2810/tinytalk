@@ -22,8 +22,12 @@ import {
   FiCheck,
   FiChevronDown,
   FiChevronUp,
+  FiLock,
+  FiMapPin,
+  FiPhone,
   FiUser,
   FiUserPlus,
+  FiUsers,
 } from "react-icons/fi";
 import * as Yup from "yup";
 import { CustomToast } from "../../components/CustomToast";
@@ -86,16 +90,19 @@ const CreateStudentSchema = Yup.object().shape({
   parent: Yup.object()
     .shape({
       name: Yup.string(),
-      phoneNumber: Yup.string().matches(
-        /^(0|\+84)(3|5|7|8|9)[0-9]{8}$/,
-        "Invalid Vietnamese phone number"
-      ),
+      phoneNumber: Yup.string()
+        .matches(
+          /^(0|\+84)(3|5|7|8|9)[0-9]{8}$/,
+          "Invalid Vietnamese phone number"
+        )
+        .required("Phone number is required"),
       relationshipToStudent: Yup.string().oneOf(
         Object.keys(RelationshipToStudent)
       ),
       address: Yup.string(),
+      password: Yup.string().required("Password is required"),
     })
-    .notRequired(),
+    .required(),
 });
 
 interface CreateStudentModalProps {
@@ -117,6 +124,7 @@ export const CreateStudentModal = ({
         phoneNumber: string;
         relationshipToStudent: string;
         address: string;
+        password: string;
       };
     }
   >({
@@ -132,6 +140,7 @@ export const CreateStudentModal = ({
       phoneNumber: "",
       relationshipToStudent: RelationshipToStudent.MOTHER,
       address: "",
+      password: "",
     },
   });
   const [classKeyword, setClassKeyword] = useState("");
@@ -145,7 +154,7 @@ export const CreateStudentModal = ({
   const [parents, setParents] = useState<Parent[]>([]);
   const isFetchingParent = useRef(false);
 
-  const [showParentForm, setShowParentForm] = useState(false);
+  const [showParentForm, setShowParentForm] = useState(true);
 
   const fetchClasses = useCallback(async (keyword: string, page: number) => {
     if (isFetchingClass.current) return;
@@ -235,15 +244,53 @@ export const CreateStudentModal = ({
   );
 
   const handleCreate = async (
-    values: CreateStudentRequest,
+    values: CreateStudentRequest & {
+      parent?: {
+        name: string;
+        phoneNumber: string;
+        relationshipToStudent: string;
+        address: string;
+        password: string;
+      };
+    },
     resetForm: () => void
   ) => {
     try {
-      console.log("Form values:", values); // Debug
-
-      const payload: CreateStudentRequest = {
-        ...values,
+      // Transform parent data: phoneNumber becomes username
+      const payload: CreateStudentRequest & {
+        parent?: {
+          name: string;
+          phoneNumber: string;
+          relationshipToStudent: string;
+          address: string;
+          user: {
+            username: string;
+            password: string;
+          };
+        };
+      } = {
+        name: values.name,
+        gender: values.gender,
+        dateOfBirth: values.dateOfBirth,
+        status: values.status,
+        classIds: values.classIds || [],
+        parentId: values.parentId,
+        userId: values.userId,
       };
+
+      // If creating new parent, map phoneNumber to username
+      if (values.parent?.phoneNumber) {
+        payload.parent = {
+          name: values.parent.name,
+          phoneNumber: values.parent.phoneNumber,
+          relationshipToStudent: values.parent.relationshipToStudent,
+          address: values.parent.address,
+          user: {
+            username: values.parent.phoneNumber, // phoneNumber is username
+            password: values.parent.password,
+          },
+        };
+      }
 
       const createdStudent = await createStudent(payload);
       resetForm();
@@ -256,7 +303,7 @@ export const CreateStudentModal = ({
         position: "top-right",
         render: () => (
           <CustomToast
-            title="Library created"
+            title="Student created"
             description="The student has been successfully created."
             status="success"
           />
@@ -304,7 +351,7 @@ export const CreateStudentModal = ({
             onClose={onClose}
             isCentered
             motionPreset="slideInBottom"
-            size="2xl"
+            size="4xl"
           >
             <ModalOverlay bg="blackAlpha.400" backdropFilter="blur(4px)" />
             <ModalContent borderRadius="full" boxShadow="2xl">
@@ -318,97 +365,97 @@ export const CreateStudentModal = ({
                 display="flex"
                 alignItems="center"
               >
-                <Text>New student</Text>
+                <Icon as={FiUserPlus} boxSize={6} />
+                <Text>New Student</Text>
               </ModalHeader>
-              <ModalCloseButton color="white" size="lg" top={5} right={5} />
+              <ModalCloseButton color="white" size="lg" top={4} right={4} />
 
               <Divider borderColor="purple.100" />
 
-              <ModalBody px={8} py={8}>
+              <ModalBody px={8} py={6}>
                 <form onSubmit={formik.handleSubmit}>
-                  <Stack spacing={8}>
+                  <Stack spacing={6}>
+                    {/* Personal Information - Compact Layout */}
                     <Box>
-                      <HStack spacing={2} mb={4}>
-                        <Icon as={FiUser} color="purple.500" boxSize={5} />
-                        <Text fontSize="lg" fontWeight="600" color="gray.700">
+                      <HStack spacing={2} mb={3}>
+                        <Icon as={FiUser} color="purple.500" boxSize={4} />
+                        <Text fontSize="md" fontWeight="600" color="gray.700">
                           Personal Information
                         </Text>
                       </HStack>
-                      <Stack spacing={5}>
-                        <InputField
-                          name="name"
-                          label="Full Name"
-                          placeholder="Enter student name"
-                        />
-
-                        <HStack spacing={4} align="flex-start">
-                          <Box flex={1}>
-                            <DateTimePicker<CreateStudentRequest>
-                              name="dateOfBirth"
-                              label="Date of Birth"
-                              dateOnly
-                            />
-                          </Box>
-                          <Box flex={1}>
-                            <SelectField name="gender" label="Gender">
-                              {Object.entries(Gender).map(([key, value]) => (
-                                <option key={key} value={value}>
-                                  {GenderLabels[value]}
-                                </option>
-                              ))}
-                            </SelectField>
-                          </Box>
-                        </HStack>
-                      </Stack>
+                      <HStack spacing={4} align="flex-start">
+                        <Box flex={2}>
+                          <InputField
+                            name="name"
+                            label="Full Name"
+                            placeholder="Enter student name"
+                          />
+                        </Box>
+                        <Box flex={1}>
+                          <DateTimePicker<CreateStudentRequest>
+                            name="dateOfBirth"
+                            label="Date of Birth"
+                            dateOnly
+                          />
+                        </Box>
+                        <Box flex={1}>
+                          <SelectField name="gender" label="Gender">
+                            {Object.entries(Gender).map(([key, value]) => (
+                              <option key={key} value={value}>
+                                {GenderLabels[value]}
+                              </option>
+                            ))}
+                          </SelectField>
+                        </Box>
+                      </HStack>
                     </Box>
 
+                    {/* Academic Information - Compact Layout */}
                     <Box>
-                      <HStack spacing={2} mb={4}>
-                        <Icon as={FiBookOpen} color="purple.500" boxSize={5} />
-                        <Text fontSize="lg" fontWeight="600" color="gray.700">
+                      <HStack spacing={2} mb={3}>
+                        <Icon as={FiBookOpen} color="purple.500" boxSize={4} />
+                        <Text fontSize="md" fontWeight="600" color="gray.700">
                           Academic Information
                         </Text>
                       </HStack>
-                      <Stack spacing={5}>
-                        <HStack spacing={4} align="flex-start">
-                          <Box flex={1}>
-                            <SelectField name="status" label="Status">
-                              {Object.entries(StudentStatus).map(
-                                ([key, value]) => (
-                                  <option key={key} value={value}>
-                                    {StudentStatusLabels[value]}
-                                  </option>
-                                )
-                              )}
-                            </SelectField>
-                          </Box>
-                          <Box flex={1}>
-                            <SelectField
-                              name="classIds"
-                              label="Classes"
-                              placeholder="Search and select classes"
-                              isMulti
-                              isFetching={isFetchingClass}
-                              hasNextPage={classMetadata.hasNextPage}
-                              handleNext={handleClassNext}
-                              onSearch={handleClassSearch}
-                            >
-                              {classOptions}
-                            </SelectField>
-                          </Box>
-                        </HStack>
-                      </Stack>
+                      <HStack spacing={4} align="flex-start">
+                        <Box flex={1}>
+                          <SelectField name="status" label="Status">
+                            {Object.entries(StudentStatus).map(
+                              ([key, value]) => (
+                                <option key={key} value={value}>
+                                  {StudentStatusLabels[value]}
+                                </option>
+                              )
+                            )}
+                          </SelectField>
+                        </Box>
+                        <Box flex={1}>
+                          <SelectField
+                            name="classIds"
+                            label="Classes"
+                            placeholder="Search and select classes"
+                            isMulti
+                            isFetching={isFetchingClass}
+                            hasNextPage={classMetadata.hasNextPage}
+                            handleNext={handleClassNext}
+                            onSearch={handleClassSearch}
+                          >
+                            {classOptions}
+                          </SelectField>
+                        </Box>
+                      </HStack>
                     </Box>
 
                     {/* Parent Information Section */}
                     <Box>
-                      <HStack spacing={2} mb={4}>
-                        <Icon as={FiUserPlus} color="purple.500" boxSize={5} />
-                        <Text fontSize="lg" fontWeight="600" color="gray.700">
+                      <HStack spacing={2} mb={3}>
+                        <Icon as={FiUserPlus} color="purple.500" boxSize={4} />
+                        <Text fontSize="md" fontWeight="600" color="gray.700">
                           Parent Information
                         </Text>
                       </HStack>
-                      <Stack spacing={4}>
+                      <Stack spacing={3}>
                         {!showParentForm ? (
                           <>
                             <SelectField
@@ -473,32 +520,70 @@ export const CreateStudentModal = ({
                             </HStack>
 
                             <Box
-                              p={5}
-                              bg="purple.50"
-                              borderRadius="lg"
-                              border="1px solid"
+                              position="relative"
+                              overflow="hidden"
+                              borderRadius="xl"
+                              border="1px"
                               borderColor="purple.100"
+                              bg="white"
+                              boxShadow="sm"
+                              _hover={{
+                                boxShadow: "md",
+                              }}
+                              transition="all 0.2s"
                             >
-                              <Stack spacing={4}>
-                                <InputField
-                                  name="parent.name"
-                                  label="Parent Name"
-                                  placeholder="Enter parent full name"
-                                />
+                              {/* Gradient Background Accent */}
+                              <Box
+                                position="absolute"
+                                top={0}
+                                left={0}
+                                right={0}
+                                height="3px"
+                                bgGradient="linear(to-r, purple.400, pink.400)"
+                              />
 
+                              <Stack spacing={4} p={5} pt={6}>
                                 <HStack spacing={4} align="flex-start">
                                   <Box flex={1}>
+                                    <HStack spacing={2} mb={2}>
+                                      <Icon
+                                        as={FiUser}
+                                        color="purple.500"
+                                        boxSize={4}
+                                      />
+                                      <Text
+                                        fontSize="xs"
+                                        fontWeight="700"
+                                        color="gray.500"
+                                        textTransform="uppercase"
+                                        letterSpacing="wide"
+                                      >
+                                        Name
+                                      </Text>
+                                    </HStack>
                                     <InputField
-                                      name="parent.phoneNumber"
-                                      label="Phone Number"
-                                      placeholder="Enter phone number"
+                                      name="parent.name"
+                                      placeholder="Enter parent full name"
                                     />
                                   </Box>
                                   <Box flex={1}>
-                                    <SelectField
-                                      name="parent.relationshipToStudent"
-                                      label="Relationship"
-                                    >
+                                    <HStack spacing={2} mb={2}>
+                                      <Icon
+                                        as={FiUsers}
+                                        color="purple.500"
+                                        boxSize={4}
+                                      />
+                                      <Text
+                                        fontSize="xs"
+                                        fontWeight="700"
+                                        color="gray.500"
+                                        textTransform="uppercase"
+                                        letterSpacing="wide"
+                                      >
+                                        Relationship
+                                      </Text>
+                                    </HStack>
+                                    <SelectField name="parent.relationshipToStudent">
                                       {Object.entries(
                                         RelationshipToStudent
                                       ).map(([key, value]) => (
@@ -510,11 +595,78 @@ export const CreateStudentModal = ({
                                   </Box>
                                 </HStack>
 
-                                <InputField
-                                  name="parent.address"
-                                  label="Address"
-                                  placeholder="Enter home address"
-                                />
+                                <Divider borderColor="purple.100" />
+
+                                <HStack spacing={4} align="flex-start">
+                                  <Box flex={1}>
+                                    <HStack spacing={2} mb={2}>
+                                      <Icon
+                                        as={FiPhone}
+                                        color="purple.500"
+                                        boxSize={4}
+                                      />
+                                      <Text
+                                        fontSize="xs"
+                                        fontWeight="700"
+                                        color="gray.500"
+                                        textTransform="uppercase"
+                                        letterSpacing="wide"
+                                      >
+                                        Phone Number (Username)
+                                      </Text>
+                                    </HStack>
+                                    <InputField
+                                      name="parent.phoneNumber"
+                                      placeholder="Enter phone number"
+                                    />
+                                  </Box>
+                                  <Box flex={1}>
+                                    <HStack spacing={2} mb={2}>
+                                      <Icon
+                                        as={FiLock}
+                                        color="purple.500"
+                                        boxSize={4}
+                                      />
+                                      <Text
+                                        fontSize="xs"
+                                        fontWeight="700"
+                                        color="gray.500"
+                                        textTransform="uppercase"
+                                        letterSpacing="wide"
+                                      >
+                                        Password
+                                      </Text>
+                                    </HStack>
+                                    <InputField
+                                      name="parent.password"
+                                      type="password"
+                                      placeholder="Enter password"
+                                    />
+                                  </Box>
+                                </HStack>
+
+                                <Box>
+                                  <HStack spacing={2} mb={2}>
+                                    <Icon
+                                      as={FiMapPin}
+                                      color="purple.500"
+                                      boxSize={4}
+                                    />
+                                    <Text
+                                      fontSize="xs"
+                                      fontWeight="700"
+                                      color="gray.500"
+                                      textTransform="uppercase"
+                                      letterSpacing="wide"
+                                    >
+                                      Address
+                                    </Text>
+                                  </HStack>
+                                  <InputField
+                                    name="parent.address"
+                                    placeholder="Enter home address"
+                                  />
+                                </Box>
                               </Stack>
                             </Box>
                           </>
@@ -525,11 +677,14 @@ export const CreateStudentModal = ({
                 </form>
               </ModalBody>
 
-              <ModalFooter px={8}>
+              <Divider borderColor="gray.100" />
+
+              <ModalFooter px={8} py={4} bg="gray.50">
                 <HStack spacing={3} w="full" justify="flex-end">
                   <Button
                     variant="ghost"
                     onClick={onClose}
+                    fontWeight="600"
                     _hover={{
                       bg: "gray.100",
                     }}
@@ -543,6 +698,8 @@ export const CreateStudentModal = ({
                     leftIcon={<Icon as={FiCheck} />}
                     bgGradient="linear(to-r, purple.500, purple.600)"
                     color="white"
+                    fontWeight="600"
+                    px={8}
                     _hover={{
                       bgGradient: "linear(to-r, purple.600, purple.700)",
                       transform: "translateY(-2px)",

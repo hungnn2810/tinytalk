@@ -26,11 +26,19 @@ router.post(
       validateRequest(req);
       const { name, code, colorCode, startTime, endTime } = req.body;
 
-      const existing = await prisma.class.findFirst({
-        where: { OR: [{ code }, { name }] },
+      const existingName = await prisma.class.findFirst({
+        where: { name },
       });
 
-      if (existing) return res.status(400).json({ message: "Class exists" });
+      if (existingName)
+        return res.status(400).json({ message: "Duplicated name" });
+
+      const existingCode = await prisma.class.findFirst({
+        where: { code },
+      });
+
+      if (existingCode)
+        return res.status(400).json({ message: "Duplicated code" });
 
       const newEntity = await prisma.class.create({
         data: { name, code, colorCode, startTime, endTime },

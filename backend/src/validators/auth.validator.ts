@@ -19,7 +19,7 @@ export const registerValidator = [
   body("role")
     .notEmpty()
     .withMessage("Role is required")
-    .isIn([$Enums.Role.ADMIN, $Enums.Role.TEACHER, $Enums.Role.STUDENT])
+    .isIn([$Enums.Role.ADMIN, $Enums.Role.TEACHER, $Enums.Role.PARENT])
     .withMessage(
       `Role must be one of: ${Object.values($Enums.Role).join(", ")}`
     ),

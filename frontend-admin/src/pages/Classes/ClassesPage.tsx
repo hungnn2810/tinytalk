@@ -26,8 +26,9 @@ import Pagination from "../../components/Pagination";
 import type { SearchResponse } from "../../models/base/search.model";
 import type { Class } from "../../models/class.model";
 import { deleteClass, searchClass } from "../../services/class.service";
-import { parseToZonedDate } from "../../utils/datetime.util";
+import { formatDate } from "../../utils/datetime.util";
 import { CreateClassModal } from "./CreateClassModal";
+import { UpdateClassModal } from "./UpdateClassModal";
 
 const CLASS_LIMIT = 20;
 const initialMetadata: SearchResponse<Class>["metadata"] = {
@@ -46,6 +47,8 @@ export default function ClassesPage() {
   const [page, setPage] = useState(1);
   const [metadata, setMetadata] = useState(initialMetadata);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [classIdToUpdate, setClassIdToUpdate] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -78,6 +81,16 @@ export default function ClassesPage() {
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
+
+  const openUpdateModal = (classId: string) => {
+    setClassIdToUpdate(classId);
+    setIsUpdateModalOpen(true);
+  };
+
+  const closeUpdateModal = () => {
+    setIsUpdateModalOpen(false);
+    setClassIdToUpdate(null);
+  };
 
   const handleDeleteClick = (id: string) => {
     setItemToDelete(id);
@@ -158,10 +171,24 @@ export default function ClassesPage() {
         </Button>
       </Flex>
 
-      {/* Modal controlled by state */}
+      {/* Create Modal */}
       <CreateClassModal
         isOpen={isModalOpen}
         onClose={closeModal}
+        onSuccess={() => {
+          // fetch lại danh sách class
+          searchClass({ page, limit: 20 }).then((res) => {
+            setData(res.data);
+            setMetadata(res.metadata);
+          });
+        }}
+      />
+
+      {/* Update Modal */}
+      <UpdateClassModal
+        isOpen={isUpdateModalOpen}
+        onClose={closeUpdateModal}
+        classId={classIdToUpdate}
         onSuccess={() => {
           // fetch lại danh sách class
           searchClass({ page, limit: 20 }).then((res) => {
@@ -218,13 +245,8 @@ export default function ClassesPage() {
                     aria-label="Options"
                   />
                   <MenuList minW="120px">
-                    <MenuItem
-                      onClick={() => {
-                        console.log("Update class:", item.id);
-                        // TODO: Open update modal
-                      }}
-                    >
-                      Update
+                    <MenuItem onClick={() => openUpdateModal(item.id)}>
+                      Edit
                     </MenuItem>
                     <MenuItem
                       color="red.500"
@@ -249,10 +271,10 @@ export default function ClassesPage() {
                 <HStack color="gray.600">
                   <Icon as={FiClock} />
                   <Text fontSize="sm">
-                    {parseToZonedDate(item.startTime, "dd/MM/yyyy")}
+                    {formatDate(item.startTime, "dd/MM/yyyy")}
                     {!item.endTime
                       ? ""
-                      : ` -> ${parseToZonedDate(item.endTime, "dd/MM/yyyy")}`}
+                      : ` -> ${formatDate(item.endTime, "dd/MM/yyyy")}`}
                   </Text>
                 </HStack>
               </Stack>

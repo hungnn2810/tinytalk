@@ -22,7 +22,7 @@ model User {
 enum Role {
   ADMIN
   TEACHER
-  STUDENT
+  PARENT
 }
 
 enum Gender {

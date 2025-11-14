@@ -1,0 +1,15 @@
+name: blend-ai
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - numpy
+  - scipy
+  - librosa
+  - pysoundfile
+  - scikit-learn
+  - joblib
+  - pandas
+  - fastapi
+  - uvicorn
+  - python-multipart

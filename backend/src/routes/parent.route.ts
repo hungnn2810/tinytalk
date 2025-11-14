@@ -1,44 +1,14 @@
 import { Role } from "@prisma/client";
-import express, { NextFunction, Request, Response } from "express";
+import express from "express";
 import { authenticate, authorize } from "../middlewares/auth";
-import { validateRequest } from "../middlewares/validateRequest";
 import {
   createSearchResponseMetadata,
   SearchResponse,
 } from "../models/pagination";
 import { prisma } from "../prisma/prisma";
 import { parseQuery } from "../utils/parseQuery";
-import { createParentValidator } from "../validators/parent.validator";
 
 const router = express.Router();
-
-// Create
-router.post(
-  "/",
-  authenticate,
-  authorize(Role.ADMIN, Role.TEACHER),
-  createParentValidator,
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      validateRequest(req);
-      const { name, phoneNumber, relationshipToStudent, address } = req.body;
-
-      const existing = await prisma.parent.findFirst({
-        where: { name, phoneNumber },
-      });
-
-      if (existing) return res.status(400).json({ message: "Parent exists" });
-
-      const newEntity = await prisma.parent.create({
-        data: { name, phoneNumber, relationshipToStudent, address },
-      });
-
-      return res.status(201).json(newEntity);
-    } catch (err) {
-      next(err);
-    }
-  }
-);
 
 interface ParentQuery {
   page: number;

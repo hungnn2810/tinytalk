@@ -24,7 +24,7 @@ import { StatCard } from "../../components/StatCard";
 import type { SearchResponse } from "../../models/base/search.model";
 import type { Class } from "../../models/class.model";
 import { searchClass } from "../../services/class.service";
-import { parseToZonedDate } from "../../utils/datetime.util";
+import { formatDate } from "../../utils/datetime.util";
 
 export const OverviewSection = () => {
   const [classes, setClasses] = useState<Class[]>([]);
@@ -216,10 +216,10 @@ export const OverviewSection = () => {
                         >
                           <Td>{c.name}</Td>
                           <Td>{c.code}</Td>
-                          <Td>{parseToZonedDate(c.startTime, "dd/MM/yyyy")}</Td>
+                          <Td>{formatDate(c.startTime, "dd/MM/yyyy")}</Td>
                           <Td>
                             {c.endTime
-                              ? parseToZonedDate(c.endTime, "dd/MM/yyyy")
+                              ? formatDate(c.endTime, "dd/MM/yyyy")
                               : "-"}
                           </Td>
                         </Tr>

@@ -7,6 +7,7 @@ import {
   Table,
   Tbody,
   Td,
+  Text,
   Th,
   Thead,
   Tr,
@@ -16,12 +17,16 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { InputField } from "../../components/InputField";
 import Pagination from "../../components/Pagination";
 import { SelectField } from "../../components/SelectField";
+import { GenderLabels } from "../../enums/Gender";
+import { StudentStatusLabels } from "../../enums/StudentStatus";
 import type { SearchResponse } from "../../models/base/search.model";
 import type { Class } from "../../models/class.model";
 import type { Student } from "../../models/student.model";
 import { searchClass } from "../../services/class.service";
 import { searchStudent } from "../../services/student.service";
+import { formatDate } from "../../utils/datetime.util";
 import { CreateStudentModal } from "./CreateStudentModal";
+import { UpdateStudentModal } from "./UpdateStudentModal";
 
 const STUDENT_LIMIT = 20;
 const CLASS_LIMIT = 10;
@@ -50,18 +55,34 @@ export default function StudentPage() {
   const [classPage, setClassPage] = useState(1);
   const [classKeyword, setClassKeyword] = useState("");
   const [metadata, setMetadata] = useState(initialMetadata);
+  const [data, setData] = useState<Student[]>([]);
   const [classMetadata, setClassMetadata] = useState(initialClassMetadata);
   const [classes, setClasses] = useState<Class[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [studentIdToUpdate, setStudentIdToUpdate] = useState<string | null>(
+    null
+  );
   const isFetching = useRef(false);
 
   const openModal = useCallback(() => setIsModalOpen(true), []);
   const closeModal = useCallback(() => setIsModalOpen(false), []);
 
+  const openUpdateModal = useCallback((studentId: string) => {
+    setStudentIdToUpdate(studentId);
+    setIsUpdateModalOpen(true);
+  }, []);
+
+  const closeUpdateModal = useCallback(() => {
+    setIsUpdateModalOpen(false);
+    setStudentIdToUpdate(null);
+  }, []);
+
   const fetchStudents = useCallback(async (page: number) => {
     try {
       const res = await searchStudent({ page, limit: STUDENT_LIMIT });
       setMetadata(res.metadata);
+      setData(res.data);
     } catch (error) {
       console.error("Error loading students:", error);
     } finally {
@@ -158,16 +179,21 @@ export default function StudentPage() {
         </Button>
       </Flex>
 
-      {/* Modal controlled by state */}
+      {/* Modals controlled by state */}
       <CreateStudentModal
         isOpen={isModalOpen}
         onClose={closeModal}
         onSuccess={() => {
-          // // fetch lại danh sách class
-          // searchClass({ page, limit: 20 }).then((res) => {
-          //   setData(res.data);
-          //   setMetadata(res.metadata);
-          // });
+          fetchStudents(page);
+        }}
+      />
+
+      <UpdateStudentModal
+        isOpen={isUpdateModalOpen}
+        onClose={closeUpdateModal}
+        studentId={studentIdToUpdate}
+        onSuccess={() => {
+          fetchStudents(page);
         }}
       />
 
@@ -239,20 +265,47 @@ export default function StudentPage() {
               <Th>Gender</Th>
               <Th>DOB</Th>
               <Th>Status</Th>
-              <Th>Parent(s)</Th>
+              <Th>Parent</Th>
               <Th></Th>
             </Tr>
           </Thead>
           <Tbody>
-            <Tr>
-              <Td>John Doe</Td>
-              <Td>Class A</Td>
-              <Td>
-                <Button size="sm" colorScheme="purple">
-                  Edit
-                </Button>
-              </Td>
-            </Tr>
+            {data.map((item) => (
+              <Tr key={item.id}>
+                <Td>{item.name}</Td>
+                <Td>
+                  <Box>
+                    {item.classes.map((cls) => (
+                      <Text key={cls.id} as="span">
+                        {cls.name}
+                      </Text>
+                    ))}
+                  </Box>
+                </Td>
+                <Td>{GenderLabels[item.gender]}</Td>
+                <Td>{formatDate(item.dateOfBirth, "dd/MM/yyyy")}</Td>
+                <Td>{StudentStatusLabels[item.status]}</Td>
+                <Td>
+                  <Box>
+                    <Text fontWeight="500" color="gray.700">
+                      {item.parent.name}
+                    </Text>
+                    <Text fontSize="sm" color="gray.500">
+                      {item.parent.phoneNumber}
+                    </Text>
+                  </Box>
+                </Td>
+                <Td>
+                  <Button
+                    size="sm"
+                    colorScheme="purple"
+                    onClick={() => openUpdateModal(item.id)}
+                  >
+                    Edit
+                  </Button>
+                </Td>
+              </Tr>
+            ))}
           </Tbody>
         </Table>
       </Box>

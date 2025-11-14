@@ -36,3 +36,28 @@ export async function createStudent(
   const res = await apiRequest<Student>(ApiMethod.POST, "/students", params);
   return res;
 }
+
+export async function getStudentById(id: string): Promise<Student> {
+  const res = await apiRequest<Student>(ApiMethod.GET, `/students/${id}`);
+  return res;
+}
+
+export interface UpdateStudentRequest {
+  name: string;
+  gender: Gender;
+  dateOfBirth: Date;
+  status: string;
+  classIds: string[];
+}
+
+export async function updateStudent(
+  id: string,
+  params: UpdateStudentRequest
+): Promise<Student> {
+  const res = await apiRequest<Student>(
+    ApiMethod.PUT,
+    `/students/${id}`,
+    params
+  );
+  return res;
+}
